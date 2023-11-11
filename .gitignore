@@ -1,7 +1,9 @@
 /database/database.db
+logger/app.log
+/logger/app.log
+*.log
 .idea/
 node_modules/
 .DS_Store
 .env
-logger/app.log
 ```
