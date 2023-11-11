@@ -1,0 +1,16 @@
+block variables
+doctype html
+html
+    head
+        meta(charset="utf-8")
+        link(rel='stylesheet', href='/css/main.css')
+        meta(name="viewport", content="width=device-width, initial-scale=1, shrink-to-fit=no")
+        meta(name="theme-color", content="#000000")
+        script(src="https://cdn.socket.io/4.3.1/socket.io.min.js")
+        title #{title} | SPACEGAME
+    body
+        div#root
+            block css
+            block menu
+            block layout-content
+            block js

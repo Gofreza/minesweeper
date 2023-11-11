@@ -1,0 +1,123 @@
+extends ../layout/base
+
+block layout-content
+    html
+        head
+            title= title
+            script(src='https://code.jquery.com/jquery-3.6.0.min.js')
+        body
+            .page-container
+                h1 Solo
+                    form(action='/createGrid', method='POST')
+                        label(for='rows') Rows:
+                        input(type='text', name='rows', id='rows', required)
+
+                        label(for='cols') Cols:
+                        input(type='text', name='cols', id='cols', required)
+
+                        button(type='submit') Play
+                h1 Multiplayer
+                    form(id="createRoom" action="")
+                        label(for="inputCreateRoom") Room Name
+                        input(id="inputCreateRoom" autocomplete="off")
+                        label(for="inputNameCreateRoom") Name
+                        input(id="inputNameCreateRoom" autocomplete="off")
+                        button Create Room
+                    form(id="joinRoom" action="")
+                        label(for="inputJoinRoom") Room Name
+                        input(id="inputJoinRoom" autocomplete="off")
+                        label(for="inputNameJoinRoom") Name
+                        input(id="inputNameJoinRoom" autocomplete="off")
+                        button Join Room
+                    button(onclick="getRooms()") Get Rooms
+                    span(id="roomList")
+    script.
+        const sessionId = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('sessionId'))
+            .split('=')[1];
+        console.log(sessionId);
+        // Connect to the socket.io server
+        const socket = io({query: {sessionId: sessionId}});
+
+        // Create Room
+        const formCreateRoom = document.getElementById('createRoom');
+        const inputCreateRoom = document.getElementById('inputCreateRoom');
+        const inputNameCreateRoom = document.getElementById('inputNameCreateRoom');
+
+        formCreateRoom.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (inputCreateRoom.value) {
+                const inputValue = inputCreateRoom.value;
+                const inputName = inputNameCreateRoom.value
+                socket.emit('createRoom', {inputValue, inputName});
+                inputCreateRoom.value = '';
+                inputNameCreateRoom.value = '';
+            }
+        })
+
+        //Join Room
+        const formJoinRoom = document.getElementById('joinRoom');
+        const inputJoinRoom = document.getElementById('inputJoinRoom');
+        const inputNameJoinRoom = document.getElementById('inputNameJoinRoom');
+
+        formJoinRoom.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (inputJoinRoom.value && inputNameJoinRoom.value) {
+                const inputValue = inputJoinRoom.value;
+                const inputName = inputNameJoinRoom.value;
+                socket.emit('joinRoom', {inputValue, inputName});
+                inputJoinRoom.value = '';
+                inputNameJoinRoom.value = '';
+            }
+        })
+
+        //Get rooms
+        function getRooms() {
+            socket.emit('getRooms');
+        }
+
+        socket.on('roomList', (roomData) => {
+            const roomList = document.getElementById('roomList');
+            roomList.innerHTML = '';
+
+            roomData.forEach((room) => {
+                const listItem = document.createElement('li');
+                const roomInfo = document.createTextNode(
+                    `Room: ${room.roomName}, Users: ${room.users.join(', ')}, Slot: ${room.slot}/2`
+                );
+                listItem.appendChild(roomInfo);
+                roomList.appendChild(listItem);
+            });
+        });
+
+        socket.on('roomData', async (data) => {
+            console.log("roomData client:",data);
+            try {
+                const body = JSON.stringify({
+                    roomName: data.roomName,
+                    users: data.users,
+                    username: data.username,
+                });
+                console.log("body:",body);
+                const response = await fetch('/room', {
+                    method: 'POST',
+                    body: body,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    // Fetch was successful, so you can redirect now
+                    window.location.href = '/room';
+                } else {
+                    // Handle the case where the server returns an error
+                    console.error('Failed to fetch:', response.status, response.statusText);
+                }
+            } catch (error) {
+                // Handle any network or other errors
+                console.error('Error during fetch:', error);
+            }
+        });
+

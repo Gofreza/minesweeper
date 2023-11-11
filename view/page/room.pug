@@ -1,0 +1,112 @@
+extends ../layout/base
+
+block layout-content
+    .page-container
+        h1(id='title')
+            span#modify Room: #{roomName}, Users: #{users},
+            span#username You: #{username}
+        button(onclick="quitRoom()") Quit
+        button(onclick="startGame()") Start Game
+    div.page-container
+        .canvas-container
+            .info-container
+                .bombs-container
+                    canvas(id="bombsCanvas")
+                    div(id="bombs") 0
+                div(id="timer") 0
+            canvas(id="minesweeperCanvas")
+    div(id="resultContainer").results-container
+        h1 Results
+        div(id="results")
+    script.
+        const socket = io();
+
+        const resultContainer = document.getElementById("resultContainer");
+        const results = document.getElementById("results");
+        // Function to get the value of a cookie by name
+        function getCookie(cookieName) {
+            const name = cookieName + "=";
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const cookieArray = decodedCookie.split(';');
+
+            for (let i = 0; i < cookieArray.length; i++) {
+                let cookie = cookieArray[i];
+                while (cookie.charAt(0) === ' ') {
+                    cookie = cookie.substring(1);
+                }
+                if (cookie.indexOf(name) === 0) {
+                    return cookie.substring(name.length, cookie.length);
+                }
+            }
+            return null;
+        }
+
+        // Handle socket events here
+        socket.on('connect', () => {
+            console.log('Connected to the socket.io server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from the socket.io server');
+        });
+
+        const title = document.getElementById("modify");
+        const username = document.getElementById("username").innerText.split(" ")[1];
+
+        function updateTitle(room, userList) {
+            title.innerText = `Room: ${room}, Users: ${userList.join(", ")} `;
+        }
+
+        let roomName;
+        let users;
+
+        socket.on('roomData', (data) => {
+            console.log('Room data:', data);
+            roomName = data.roomName;
+            users = data.users;
+            console.log("Users: ", users);
+            updateTitle(roomName, users);
+        });
+
+        function quitRoom() {
+            socket.emit('quitRoom', {roomName, username});
+            window.location.href = '/';
+        }
+        function startGame() {
+            // Other logic...
+            resultContainer.style.display = "none";
+            socket.emit('startVersusGame', {roomName});
+        }
+
+        socket.on('receiveVersusGame', (data) => {
+            const rows = data.rows;
+            const cols = data.cols;
+            resultContainer.style.display = "none";
+            console.log('rows', rows, 'cols', cols);
+            const script = document.createElement('script');
+            script.src = `/js/versus.bundle.js`;
+            document.body.appendChild(script);
+            document.dispatchEvent(new CustomEvent('startVersusGameEvent', {detail: {rows: rows, cols: cols}}));
+        });
+
+        // Wait for the 'endGame' event to be dispatched
+        document.addEventListener('endVersusGame', (event) => {
+            console.log('endVersusGame event received');
+            const {result} = event.detail;
+            // Emit a signal to the socket
+            socket.emit('gameFinished', {result, roomName, username});
+        });
+
+        socket.on('versusGameResult', (data) => {
+            console.log("Game result:", data);
+            const allResults = data.results;
+            const sortedResults = allResults.sort((a, b) => a.score - b.score);
+            resultContainer.style.display = "flex";
+            // Build a string with results
+            let resultsText = "Results:\n";
+            sortedResults.forEach((result, index) => {
+                resultsText += `${index + 1}. ${result.username} - Score: ${result.score}\n`;
+            });
+            results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
+            results.innerText = results.innerText + "\n" + resultsText;
+        })

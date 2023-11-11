@@ -1,0 +1,19 @@
+extends layout
+
+block css
+    //link(rel='stylesheet', href='/css/style.css')
+block menu
+
+    if showMenuBar
+        .menu-container
+            .menu
+                a(class="menu-item" href="/") Home
+                a(class="menu-item" href="/") Base
+                a(class="menu-item" href="/") Planet
+                a(class="menu-item" href="/") Stars Map
+                .menu-item.dropdown-trigger
+                    | Buildings
+                    .dropdown-content
+                        a(class="dropdown-item" href="/") LSS
+                a(class="menu-item" href="/") Parameters
+                a(class="menu-item" href="/") Logout

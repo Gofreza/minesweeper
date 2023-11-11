@@ -1,0 +1,163 @@
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    color: black;
+    background-attachment: fixed;
+}
+
+a:visited, a:link {
+    color: white;
+}
+
+/*
+    MENU
+ */
+.menu-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 10px;
+}
+
+.menu {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    background-color: #060810;
+    color: inherit;
+    padding: 10px;
+    margin-bottom: 10px;
+    z-index: 1000;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: rgb(48, 52, 54);
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 12px 16px;
+    text-decoration: none;
+    width: auto;
+    color: #333;
+}
+
+.menu-item:hover .dropdown-content {
+    display: block;
+}
+
+.menu-item {
+    position: relative;
+    margin-right: 10px;
+    padding: 10px;
+    text-decoration: none;
+    color: #fff;
+    background-color: #555;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.menu-item:hover, .dropdown-item:hover {
+    background-color: #777;
+}
+
+.pointer-cursor:hover {
+    cursor: pointer;
+}
+
+.endMenu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.endMenu div {
+    display: flex;
+    flex-direction: column;
+}
+
+#gameWin, #gameOver {
+    animation: fadeIn 0.5s ease;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 10px;
+    padding-top: 20px;
+}
+
+.canvas-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    width: fit-content;
+    padding: 10px;
+}
+
+.buttons {
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+button {
+    border: none;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 20%;
+}
+
+canvas {
+    background-color: #f9f8f5;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.1);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.info-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    padding-bottom: 10px;
+    background-color: #f9f8f5;
+}
+
+.bombs-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.results-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: lightgray;
+    border: solid 1px black;
+}
