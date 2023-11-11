@@ -1,12 +1,23 @@
-import Cell from "./cell"
+const Cell = require("./cell");
 
-export default class Grid {
+class Grid {
 
     DIFFICULTY_NORMAL = 0.15;
-    constructor(length, width) {
+
+    /**
+     * Constructor to create a grid with specified bomb coordinates or not. If not, generated bombs will be placed randomly.
+     * @param {number} length - Number of rows
+     * @param {number} width - Number of columns
+     * @param {number} numBombs - Number of bombs
+     * @param {Array} bombCoordinates - Array of {row, col} representing bomb coordinates
+     */
+    constructor(length, width, numBombs, bombCoordinates = []) {
         this.length = length;
         this.width = width;
         this.matrix = [];
+        this.numbombs = numBombs;
+
+        // Initialize matrix with cells
         for (let i = 0; i < length; i++) {
             let row = [];
             for (let j = 0; j < width; j++) {
@@ -15,9 +26,15 @@ export default class Grid {
             }
             this.matrix.push(row);
         }
-        const numBombs = Math.floor(length * width * this.DIFFICULTY_NORMAL);
-        this.numbombs = numBombs;
-        this.placeBombs(numBombs);
+
+        if (bombCoordinates.length > 0) {
+            // Place bombs based on specified coordinates
+
+            this.placeBombsFromCoordinates(bombCoordinates);
+        } else {
+            this.placeBombs(this.numbombs);
+        }
+
     }
 
     get numBomb() {
@@ -38,6 +55,19 @@ export default class Grid {
                 bombsToPlace--;
             }
         }
+    }
+
+    /**
+     * Place bombs on the grid based on specified coordinates
+     * @param {Array} bombCoordinates - Array of {row, col} representing bomb coordinates
+     */
+    placeBombsFromCoordinates(bombCoordinates) {
+        bombCoordinates.forEach(({ row, col }) => {
+            if (row >= 0 && row < this.length && col >= 0 && col < this.width) {
+                this.matrix[row][col].setBomb();
+                this.calculateCellWeight(row, col);
+            }
+        });
     }
 
     calculateCellWeight(row, col) {
@@ -184,3 +214,5 @@ export default class Grid {
     }
 
 }
+
+module.exports = Grid;

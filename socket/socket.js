@@ -17,6 +17,23 @@ const Logger = require('../logger/logger');
 const logger = new Logger();
 logger.resetLogFile();
 
+function generateBombCoordinates(length, width, numBombs) {
+    const bombCoordinates = [];
+
+    while (bombCoordinates.length < numBombs) {
+        const newRow = Math.floor(Math.random() * length);
+        const newCol = Math.floor(Math.random() * width);
+
+        // Ensure the generated coordinate is unique
+        if (!bombCoordinates.some(coord => coord.row === newRow && coord.col === newCol)) {
+            bombCoordinates.push({ row: newRow, col: newCol });
+        }
+    }
+
+    return bombCoordinates;
+}
+
+
 // Export a function that takes the server instance and session middleware
 module.exports = function configureSocket(server, sessionMiddleware) {
     const io = new Server(server, { connectionStateRecovery: {} });
@@ -126,12 +143,15 @@ module.exports = function configureSocket(server, sessionMiddleware) {
             const roomName = data.roomName;
             const rows = 10;
             const cols = 10;
-            console.log("Exist ?:",!await roomFunctions.checkIfRoomExists(db, roomName));
             if (!await roomFunctions.checkIfRoomExists(db, roomName)) {
                 await roomFunctions.setRoomData(db, roomName, rows, cols);
             }
+            const numBombs = Math.floor(rows * cols * parseFloat(process.env.BOMB_DENSITY_NORMAL));
+            const bombCoordinates = generateBombCoordinates(rows, cols, numBombs);
 
             io.to(roomName).emit('receiveVersusGame', {
+                numBombs: numBombs,
+                bombCoordinates: bombCoordinates,
                 rows: rows,
                 cols: cols,
             });
@@ -157,6 +177,7 @@ module.exports = function configureSocket(server, sessionMiddleware) {
                 const allResults = await userFunctions.getResultsFromRoomName(db, roomName);
                 console.log("Allresults:",allResults);
                 io.to(roomName).emit('versusGameResult', {result:results.score, winner:results.username, results:allResults});
+                await userFunctions.deleteAllUserScores(db, roomName);
             }
         })
     });

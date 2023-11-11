@@ -1,0 +1,5 @@
+/database/database.db
+.idea/
+node_modules/
+.DS_Store
+```

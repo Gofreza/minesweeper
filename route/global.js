@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
     //Put the sessionId inside a cookie
     res.cookie('sessionId', sessionId);
     res.render("../view/page/home.pug", {
-        title:"Test",
+        title:"Home",
         boardLength: 5,
         boardWidth: 5,
         showMenuBar: true,
@@ -71,6 +71,7 @@ router.get('/room', (req, res) => {
     //console.log("SessionGET roomName:", roomName, "users:", users, "username:", username);
     // Render the page
     res.render('../view/page/room.pug', {
+        title: roomName,
         roomName:roomName,
         users:users,
         username:username,

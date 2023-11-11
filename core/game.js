@@ -1,11 +1,6 @@
 import Grid from "./grid"
 
-function sendCoordinates(row, col) {
-    $.post('/cellClicked', {row: row, col: col})
-        .done(function (data) {
-            console.log('Coordinates sent:', data);
-        });
-}
+const BOMB_DENSITY_NORMAL = 0.15;
 
 function drawBomb(ctx, x, y, radius, offset) {
     // Draw a black circle for bombs
@@ -200,6 +195,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         const bombCol = obj.bombCol;
                         if (!grid.matrix[bombRow][bombCol].getExploded()) {
                             lose();
+                            return;
                         }
                     }
                 }
@@ -252,9 +248,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         // Update the bombs counter
-        if (grid.matrix[row][col].isFlagged()) {
+        if (!grid.matrix[row][col].isVisible() && grid.matrix[row][col].isFlagged() ) {
             bombsDiv.innerHTML = (parseInt(bombsDiv.innerHTML) - 1).toString();
-        } else {
+        }
+        if (!grid.matrix[row][col].isVisible() && !grid.matrix[row][col].isFlagged()) {
             bombsDiv.innerHTML = (parseInt(bombsDiv.innerHTML) + 1).toString();
         }
 
@@ -268,12 +265,32 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    function generateBombCoordinates(length, width, numBombs) {
+        const bombCoordinates = [];
+
+        while (bombCoordinates.length < numBombs) {
+            const newRow = Math.floor(Math.random() * length);
+            const newCol = Math.floor(Math.random() * width);
+
+            // Ensure the generated coordinate is unique
+            if (!bombCoordinates.some(coord => coord.row === newRow && coord.col === newCol)) {
+                bombCoordinates.push({ row: newRow, col: newCol });
+            }
+        }
+
+        return bombCoordinates;
+    }
+
+    const numBombs = Math.floor(numRows * numCols * BOMB_DENSITY_NORMAL);
+    const bombCoordinates = generateBombCoordinates(numRows, numCols, numBombs);
+    console.log(bombCoordinates, numBombs)
+
     // USAGE
 
     let gameEnded = false;
     addClickListeners();
 
-    const grid = new Grid(numRows, numCols); // Creating a new Grid
+    const grid = new Grid(numRows, numCols, numBombs, bombCoordinates); // Creating a new Grid
     //const gridTest = new Grid(15, 10, 10);
     //console.log(gridTest.matrix)
 

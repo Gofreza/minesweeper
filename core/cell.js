@@ -1,4 +1,4 @@
-export default class Cell {
+class Cell {
     constructor() {
         this.bomb = false;
         this.number = 0;
@@ -203,3 +203,5 @@ export default class Cell {
         }
     }
 }
+
+module.exports = Cell;

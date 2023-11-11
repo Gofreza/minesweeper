@@ -6,7 +6,7 @@ async function init() {
         const db = await setupDatabase();
         console.log("Database created socket.js");
 
-        const results = await userFunctions.getResultsFromRoomName(db, "test");
+        const results = await userFunctions.deleteAllUserScores(db, "tet");
         console.log("results:", results);
     } catch (error) {
         console.error("Error:", error.message);

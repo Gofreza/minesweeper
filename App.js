@@ -9,6 +9,8 @@ const port = 8000;
 const http = require('http');
 const server = http.createServer(app); // Use http.createServer to create a server
 
+require('dotenv').config();
+
 // *************************
 // *** Middleware config ***
 // *************************

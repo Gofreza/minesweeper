@@ -59,7 +59,10 @@ function drawBomb(ctx, x, y, radius, offset) {
 }
 
 document.addEventListener('startVersusGameEvent', async function (event)  {
-    const { rows, cols } = event.detail;
+    const {numBombs, bombCoordinates ,rows, cols} = event.detail;
+    console.log(`Received startVersusGameEvent with numBombs: ${numBombs}, bombCoordinates: ${bombCoordinates}, rows: ${rows}, cols: ${cols}`)
+    const grid = new Grid(rows, cols, numBombs, bombCoordinates);
+    console.log(`Starting a new game with grid ${grid}`);
     const canvas = document.getElementById('minesweeperCanvas');
     const ctx = canvas.getContext('2d');
     let zoomFactor = 1;
@@ -75,7 +78,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
     //Bombs
     const bombCanvas = document.getElementById('bombsCanvas');
     const bombCtx = bombCanvas.getContext('2d');
-    
+
     const numRows = rows; // Define the number of rows
     const numCols = cols; // Define the number of columns
     console.log(`Rows: ${numRows}, cols: ${numCols}`)
@@ -276,7 +279,6 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
             bombsDiv.innerHTML = (parseInt(bombsDiv.innerHTML) + 1).toString();
         }
 
-
         if (checkIfGameEnded()) {
             isGameWin = true;
             stopTimer();
@@ -293,7 +295,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
     let gameEnded = false;
     addClickListeners();
 
-    const grid = new Grid(numRows, numCols); // Creating a new Grid
+    //const grid = new Grid(numRows, numCols); // Creating a new Grid
     //const gridTest = new Grid(15, 10, 10);
     //console.log(gridTest.matrix)
 

@@ -8,14 +8,18 @@
  *                          The promise is rejected if there is an error during the insertion process.
  */
 async function addUserScore(db, roomName, username, score) {
-    // SQL query to insert user score into the 'users' table
-    console.log("addUserScore : " + roomName + " " + username + " " + score);
-    const sql = `INSERT INTO users (roomName, username, score) VALUES (?, ?, ?)`;
+    console.log("addUserScore: " + roomName + " " + username + " " + score);
+
+    // SQL query to insert or replace user score in the 'users' table
+    const sql = `
+        INSERT OR REPLACE INTO users (roomName, username, score) 
+        VALUES (?, ?, COALESCE((SELECT score FROM users WHERE roomName = ? AND username = ?), 0) + ?)
+    `;
 
     // Return a Promise for asynchronous handling
     return new Promise((resolve, reject) => {
         // Execute the SQL query using the 'db.run' method
-        db.run(sql, [roomName, username, score], (err) => {
+        db.run(sql, [roomName, username, roomName, username, score], (err) => {
             // If there's an error, log it to the console and reject the promise
             if (err) {
                 console.error("Error addUserScore:", err.message);
@@ -27,6 +31,7 @@ async function addUserScore(db, roomName, username, score) {
         });
     });
 }
+
 
 /**
  * Deletes a user score entry from the 'users' table in the database.
@@ -45,6 +50,30 @@ async function deleteUserScore(db, roomName, username) {
     return new Promise((resolve) => {
         // Execute the SQL query using the 'db.run' method
         db.run(sql, [roomName, username], (err) => {
+            // If there's an error, log it to the console (but don't reject the promise)
+            if (err) {
+                console.error("Error deleteUserScore:", err.message);
+            }
+            // Resolve the promise regardless of success or failure
+            resolve();
+        });
+    });
+}
+
+/**
+ * Deletes all user score entries from the 'users' table in the database for a given room.
+ * @param {Object} db - The database object.
+ * @param {string} roomName - The name of the room associated with the user scores.
+ * @returns {Promise<unknown>} A promise that resolves when the user scores are successfully deleted.
+ */
+async function deleteAllUserScores(db, roomName) {
+    // SQL query to delete user score from the 'users' table
+    const sql = `DELETE FROM users WHERE roomName = ?`;
+
+    // Return a Promise for asynchronous handling
+    return new Promise((resolve) => {
+        // Execute the SQL query using the 'db.run' method
+        db.run(sql, [roomName], (err) => {
             // If there's an error, log it to the console (but don't reject the promise)
             if (err) {
                 console.error("Error deleteUserScore:", err.message);
@@ -144,5 +173,5 @@ async function getHighestScoreFromRoomName(db, roomName) {
 
 
 module.exports = {
-    addUserScore, deleteUserScore, getResultsFromRoomName, checkResults, getHighestScoreFromRoomName,
+    addUserScore, deleteUserScore, deleteAllUserScores, getResultsFromRoomName, checkResults, getHighestScoreFromRoomName,
 }

@@ -21,8 +21,11 @@ block layout-content
     script.
         const socket = io();
 
+        let isScriptAppended = false;
+
         const resultContainer = document.getElementById("resultContainer");
         const results = document.getElementById("results");
+
         // Function to get the value of a cookie by name
         function getCookie(cookieName) {
             const name = cookieName + "=";
@@ -79,14 +82,23 @@ block layout-content
         }
 
         socket.on('receiveVersusGame', (data) => {
+            const numBombs = data.numBombs;
+            const bombCoordinates = data.bombCoordinates;
             const rows = data.rows;
             const cols = data.cols;
+            //const rows = data.rows;
+            //const cols = data.cols;
             resultContainer.style.display = "none";
-            console.log('rows', rows, 'cols', cols);
-            const script = document.createElement('script');
-            script.src = `/js/versus.bundle.js`;
-            document.body.appendChild(script);
-            document.dispatchEvent(new CustomEvent('startVersusGameEvent', {detail: {rows: rows, cols: cols}}));
+
+            if (!isScriptAppended) {
+                const script = document.createElement('script');
+                script.src = `/js/versus.bundle.js`;
+                document.body.appendChild(script);
+                isScriptAppended = true; // Mark the script as appended
+            }
+
+            //console.log('rows', rows, 'cols', cols);
+            document.dispatchEvent(new CustomEvent('startVersusGameEvent', {detail: {numBombs, bombCoordinates, rows, cols}}));
         });
 
         // Wait for the 'endGame' event to be dispatched
