@@ -131,15 +131,42 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     function checkIfGameEnded() {
+        let bombNumber = 0;
+        let flagNumber = 0;
+        let visibleNonBombCells = 0;
+
         for (let row = 0; row < numRows; row++) {
             for (let col = 0; col < numCols; col++) {
-                if (grid.matrix[row][col].hasBomb() && !grid.matrix[row][col].isVisible() && !grid.matrix[row][col].isFlagged()) {
+                const cell = grid.matrix[row][col];
+
+                if (cell.hasBomb()) {
+                    bombNumber++;
+                }
+
+                if (cell.isFlagged()) {
+                    flagNumber++;
+                }
+
+                if (cell.isVisible() && !cell.hasBomb()) {
+                    visibleNonBombCells++;
+                }
+            }
+        }
+
+        for (let row = 0; row < numRows; row++) {
+            for (let col = 0; col < numCols; col++) {
+                const cell = grid.matrix[row][col];
+
+                if (cell.hasBomb() && !cell.isVisible() && !cell.isFlagged()) {
                     return false; // The game hasn't ended yet
                 }
             }
         }
-        return true; // All bomb cells have been flagged, so the game has ended
+
+        return bombNumber === flagNumber && visibleNonBombCells === (numRows * numCols - bombNumber);
+
     }
+
 
     function removeClickListeners() {
         canvas.removeEventListener('click', clickHandler);
