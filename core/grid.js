@@ -185,8 +185,8 @@ class Grid {
                 }
             }
         }
-        console.log("revealNeighbours:", number, ": ", flagNumber);
-        if (flagNumber === number) {
+        //console.log("revealNeighbours:", number, ": ", flagNumber);
+        if (flagNumber >= number) {
 
             for (let [dx, dy] of directions) {
                 let newRow = row + dx;
@@ -209,7 +209,7 @@ class Grid {
             }
         }
 
-        console.log("bombs: ", bombs);
+        //console.log("bombs: ", bombs);
         return {isBomb: isBomb, bombsList: bombs};
     }
 

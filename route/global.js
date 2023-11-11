@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
+const Logger = require('../logger/logger');
+const logger = new Logger();
+
 const setupDatabase = require('../database/dbSetup');
 const roomFunctions = require('../database/dbRoom');
 let db;
@@ -9,11 +12,6 @@ setupDatabase()
         db = database;
         console.log("Database created global.js");
     });
-
-// A mettre dans une base de données
-// Pour une partie on stocke ses infos
-let numRows = 0;
-let numCols = 0;
 
 router.get('/', (req, res) => {
     const sessionId = req.sessionID;
@@ -29,6 +27,7 @@ router.get('/', (req, res) => {
 })
 
 router.get('/test', (req, res) => {
+    logger.log("Solo game room launched");
     res.render('../view/page/test.pug', {
         title: "MineSweeper",
         showMenuBar: true,
@@ -37,23 +36,18 @@ router.get('/test', (req, res) => {
 
 router.post('/createGrid', (req, res) => {
     const {rows, cols} = req.body;
-    numRows = rows;
-    numCols = cols;
+    res.cookie('rows', rows);
+    res.cookie('cols', cols);
     res.redirect('/test');
 })
 
 router.get('/getVersusGridInfo', async (req, res) => {
     const { roomName } = req.query;
-    console.log("getVersusGridInfo roomName:", roomName);
+    //console.log("getVersusGridInfo roomName:", roomName);
     const values = await roomFunctions.getRoomData(db, roomName);
-    console.log("Values getVersusGridInfo:", values);
+    //console.log("Values getVersusGridInfo:", values);
     res.json({rows: values.rows, cols: values.cols });
 });
-
-
-router.get('/getGridInfo', (req, res) => {
-    res.send({rows: numRows, cols:numCols});
-})
 
 router.post('/room', (req, res) => {
     const { roomName, users, username } = req.body;

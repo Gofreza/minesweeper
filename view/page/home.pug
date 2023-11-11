@@ -92,14 +92,12 @@ block layout-content
         });
 
         socket.on('roomData', async (data) => {
-            console.log("roomData client:",data);
             try {
                 const body = JSON.stringify({
                     roomName: data.roomName,
                     users: data.users,
                     username: data.username,
                 });
-                console.log("body:",body);
                 const response = await fetch('/room', {
                     method: 'POST',
                     body: body,

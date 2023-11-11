@@ -45,9 +45,6 @@ module.exports = function configureSocket(server, sessionMiddleware) {
     let rooms = {};
 
     io.on('connection', (socket) => {
-        //console.log('a user connected:', socket.id);
-        //console.log("Socket Session:",socket.handshake.session);
-        //console.log("Socket Session ID:",socket.handshake.session.id);
         logger.log('A User connected: ' + socket.handshake.session.id);
 
         socket.on('createRoom', (data) => {
@@ -63,7 +60,7 @@ module.exports = function configureSocket(server, sessionMiddleware) {
                 users: rooms[roomName].users,
                 username: username,
             });
-            //console.log(`${username} created room ${roomName} and join !`);
+
             logger.log(`${socket.handshake.session.id} : ${username} created room ${roomName} and join !`);
         });
 
@@ -83,7 +80,6 @@ module.exports = function configureSocket(server, sessionMiddleware) {
                 });
             }
 
-            //console.log(`${username} joined room ${roomName}`);
             logger.log(`${socket.handshake.session.id} : ${username} joined room ${roomName}`)
         });
 
@@ -108,14 +104,14 @@ module.exports = function configureSocket(server, sessionMiddleware) {
                     });
                 }
             }
-            //console.log(`${username} quit room ${roomName}`);
+
             logger.log(`${socket.handshake.session.id} : ${username} quit room ${roomName}`)
         } );
 
         // Auto reconnect
         if (socket.handshake.session.room) {
             const roomName = socket.handshake.session.room;
-            //const username = socket.handshake.session.username;
+
             socket.join(roomName);
 
             io.to(roomName).emit('roomData', {
@@ -163,7 +159,7 @@ module.exports = function configureSocket(server, sessionMiddleware) {
             const roomName = data.roomName;
             const username = data.username;
             const playerNumber = rooms[roomName].slot
-            console.log("Game finished server side in room " + roomName + " with result " + username + " : " + result + " !");
+            //console.log("Game finished server side in room " + roomName + " with result " + username + " : " + result + " !");
             logger.log(`${socket.handshake.session.id} : ${socket.handshake.session.username} finished his game in room ${roomName} with result ${result}`)
             // Put result in the db
             await userFunctions.addUserScore(db, roomName, username, result);
@@ -173,9 +169,7 @@ module.exports = function configureSocket(server, sessionMiddleware) {
                 //console.log("Game as ended everywhere !");
                 logger.log(`${roomName} : Game as ended everywhere !`);
                 const results = await userFunctions.getHighestScoreFromRoomName(db, roomName);
-                console.log(results);
                 const allResults = await userFunctions.getResultsFromRoomName(db, roomName);
-                console.log("Allresults:",allResults);
                 io.to(roomName).emit('versusGameResult', {result:results.score, winner:results.username, results:allResults});
                 await userFunctions.deleteAllUserScores(db, roomName);
             }

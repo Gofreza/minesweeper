@@ -60,9 +60,9 @@ function drawBomb(ctx, x, y, radius, offset) {
 
 document.addEventListener('startVersusGameEvent', async function (event)  {
     const {numBombs, bombCoordinates ,rows, cols} = event.detail;
-    console.log(`Received startVersusGameEvent with numBombs: ${numBombs}, bombCoordinates: ${bombCoordinates}, rows: ${rows}, cols: ${cols}`)
+    //console.log(`Received startVersusGameEvent with numBombs: ${numBombs}, bombCoordinates: ${bombCoordinates}, rows: ${rows}, cols: ${cols}`)
     const grid = new Grid(rows, cols, numBombs, bombCoordinates);
-    console.log(`Starting a new game with grid ${grid}`);
+    //console.log(`Starting a new game with grid ${grid}`);
     const canvas = document.getElementById('minesweeperCanvas');
     const ctx = canvas.getContext('2d');
     let zoomFactor = 1;
@@ -81,7 +81,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
 
     const numRows = rows; // Define the number of rows
     const numCols = cols; // Define the number of columns
-    console.log(`Rows: ${numRows}, cols: ${numCols}`)
+    //console.log(`Rows: ${numRows}, cols: ${numCols}`)
     const cellSize = 40; // Calculate the cell size dynamically
     let canvasWidth = cellSize * numCols; // Calculate the canvas width
     let canvasHeight = cellSize * numRows; // Calculate the canvas height
@@ -107,7 +107,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
 
     function handleGameEnd(result) {
         // Dispatch the 'endGame' event with the result as the detail
-        console.log(`Game ended with result: ${result}`);
+        //console.log(`Game ended with result: ${result}`);
         document.dispatchEvent(new CustomEvent('endVersusGame', { detail: { result } }));
     }
 
@@ -202,14 +202,14 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         const y = event.clientY - rect.top;
         const row = Math.floor(y / cellSize * zoomFactor);
         const col = Math.floor(x / cellSize * zoomFactor);
-        console.log(`Left-clicked on cell (${row}, ${col}), Visible: ${grid.matrix[row][col].isVisible()}, Flagged: ${grid.matrix[row][col].isFlagged()}`);
+        //console.log(`Left-clicked on cell (${row}, ${col}), Visible: ${grid.matrix[row][col].isVisible()}, Flagged: ${grid.matrix[row][col].isFlagged()}`);
         startTimer();
 
         // Handle left clicks
         if (grid.matrix[row][col].isVisible()) {
             if (grid.matrix[row][col].getNumber() > 0 && !grid.matrix[row][col].hasBomb()) {
                 const {isBomb, bombsList} = grid.revealNeighbours(row, col);
-                console.log(`isBomb: ${isBomb}, bombList: ${bombsList}`)
+                //console.log(`isBomb: ${isBomb}, bombList: ${bombsList}`)
                 if (isBomb) {
                     for (const obj of bombsList) {
                         const bombRow = obj.bombRow;
@@ -256,7 +256,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         const y = event.clientY - rect.top;
         const row = Math.floor(y / cellSize);
         const col = Math.floor(x / cellSize);
-        console.log(`Right-clicked on cell (${row}, ${col}, ${grid.matrix[row][col].getExploded()})`);
+        //console.log(`Right-clicked on cell (${row}, ${col}, ${grid.matrix[row][col].getExploded()})`);
         startTimer();
 
         // Handle right clicks
@@ -282,7 +282,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         if (checkIfGameEnded()) {
             isGameWin = true;
             stopTimer();
-            console.log("Game Over! You win!");
+            //console.log("Game Over! You win!");
             gameEnded = true;
             removeClickListeners();
             //isGameWon();

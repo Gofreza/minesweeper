@@ -61,6 +61,24 @@ function drawBomb(ctx, x, y, radius, offset) {
     ctx.closePath();
 }
 
+// Function to get the value of a cookie by name
+function getCookie(cookieName) {
+    const name = cookieName + "=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const cookieArray = decodedCookie.split(';');
+
+    for (let i = 0; i < cookieArray.length; i++) {
+        let cookie = cookieArray[i];
+        while (cookie.charAt(0) === ' ') {
+            cookie = cookie.substring(1);
+        }
+        if (cookie.indexOf(name) === 0) {
+            return cookie.substring(name.length, cookie.length);
+        }
+    }
+    return null;
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
     const canvas = document.getElementById('minesweeperCanvas');
     const ctx = canvas.getContext('2d');
@@ -77,9 +95,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     const bombCanvas = document.getElementById('bombsCanvas');
     const bombCtx = bombCanvas.getContext('2d');
 
-    const response = await fetch('/getGridInfo');
-    const data = await response.json();
-    const {rows, cols, bombs} = data;
+    const rows = getCookie('rows');
+    const cols = getCookie('cols');
 
     const numRows = rows; // Define the number of rows
     const numCols = cols; // Define the number of columns
@@ -149,7 +166,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     function lose(){
-        console.log("Game Over! You clicked on a bomb.");
+        //console.log("Game Over! You clicked on a bomb.");
         stopTimer()
         gameEnded = true;
         removeClickListeners();
@@ -181,14 +198,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         const y = event.clientY - rect.top;
         const row = Math.floor(y / cellSize * zoomFactor);
         const col = Math.floor(x / cellSize * zoomFactor);
-        console.log(`Left-clicked on cell (${row}, ${col})`);
+        //console.log(`Left-clicked on cell (${row}, ${col})`);
         startTimer();
 
         // Handle left clicks
         if (grid.matrix[row][col].isVisible()) {
             if (grid.matrix[row][col].getNumber() > 0 && !grid.matrix[row][col].hasBomb()) {
                 const {isBomb, bombsList} = grid.revealNeighbours(row, col);
-                console.log(`isBomb: ${isBomb}, bombList: ${bombsList}`)
+                //console.log(`isBomb: ${isBomb}, bombList: ${bombsList}`)
                 if (isBomb) {
                     for (const obj of bombsList) {
                         const bombRow = obj.bombRow;
@@ -232,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const y = event.clientY - rect.top;
         const row = Math.floor(y / cellSize);
         const col = Math.floor(x / cellSize);
-        console.log(`Right-clicked on cell (${row}, ${col})`);
+        //console.log(`Right-clicked on cell (${row}, ${col})`);
         startTimer();
 
         // Handle right clicks
@@ -258,7 +275,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (checkIfGameEnded()) {
             isGameWin = true;
             stopTimer();
-            console.log("Game Over! You win!");
+            //console.log("Game Over! You win!");
             gameEnded = true;
             removeClickListeners();
             isGameWon();
@@ -283,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const numBombs = Math.floor(numRows * numCols * BOMB_DENSITY_NORMAL);
     const bombCoordinates = generateBombCoordinates(numRows, numCols, numBombs);
-    console.log(bombCoordinates, numBombs)
+    //console.log(bombCoordinates, numBombs)
 
     // USAGE
 

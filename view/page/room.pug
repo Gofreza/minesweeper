@@ -44,15 +44,6 @@ block layout-content
             return null;
         }
 
-        // Handle socket events here
-        socket.on('connect', () => {
-            console.log('Connected to the socket.io server');
-        });
-
-        socket.on('disconnect', () => {
-            console.log('Disconnected from the socket.io server');
-        });
-
         const title = document.getElementById("modify");
         const username = document.getElementById("username").innerText.split(" ")[1];
 
@@ -64,10 +55,10 @@ block layout-content
         let users;
 
         socket.on('roomData', (data) => {
-            console.log('Room data:', data);
+            //console.log('Room data:', data);
             roomName = data.roomName;
             users = data.users;
-            console.log("Users: ", users);
+            //console.log("Users: ", users);
             updateTitle(roomName, users);
         });
 
@@ -103,14 +94,14 @@ block layout-content
 
         // Wait for the 'endGame' event to be dispatched
         document.addEventListener('endVersusGame', (event) => {
-            console.log('endVersusGame event received');
+            //console.log('endVersusGame event received');
             const {result} = event.detail;
             // Emit a signal to the socket
             socket.emit('gameFinished', {result, roomName, username});
         });
 
         socket.on('versusGameResult', (data) => {
-            console.log("Game result:", data);
+            //console.log("Game result:", data);
             const allResults = data.results;
             const sortedResults = allResults.sort((a, b) => a.score - b.score);
             resultContainer.style.display = "flex";
