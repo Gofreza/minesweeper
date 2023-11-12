@@ -6,7 +6,13 @@ block layout-content
             span#modify Room: #{roomName}, Users: #{users},
             span#username You: #{username}
         button(onclick="quitRoom()") Quit
-        button(id="startGame" onclick="startGame()") Start Game
+        div(id="startGame")
+            form(id="startForm")
+                label(for="rows") Rows:
+                input(type="number" id="rows" name="rows" min="1" max="100" value="10")
+                label(for="cols") Cols:
+                input(type="number" id="cols" name="cols" min="1" max="100" value="10")
+            button(id="startGameButton" onclick="startGame()") Start Game
     div.page-container
         .canvas-container
             .info-container
@@ -29,7 +35,8 @@ block layout-content
         const results = document.getElementById("results");
         const title = document.getElementById("modify");
         const username = document.getElementById("username").innerText.split(" ")[1];
-        const startButton = document.getElementById("startGame");
+        const startDiv = document.getElementById("startGame");
+        const startButton = document.getElementById("startGameButton");
         const waiting = document.getElementById("waiting");
         let clickStartButton = 0;
 
@@ -53,10 +60,10 @@ block layout-content
             users = data.users;
             // First to join is host (first in the list)
             if (username === users[0]){
-                startButton.style.display = "block";
+                startDiv.style.display = "block";
             }
             else {
-                startButton.style.display = "none";
+                startDiv.style.display = "none";
             }
             //console.log("Users: ", users);
             updateTitle(roomName, users);
@@ -68,10 +75,11 @@ block layout-content
         }
 
         function startGame() {
-            // Other logic...
+            const rows = document.getElementById("rows").value;
+            const cols = document.getElementById("cols").value;
             resultContainer.style.display = "none";
-            socket.emit('startVersusGame', {roomName});
-            startButton.style.display = "none";
+            socket.emit('startVersusGame', {roomName, rows, cols});
+            startDiv.style.display = "none";
         }
 
         socket.on('receiveVersusGame', (data) => {
@@ -79,7 +87,7 @@ block layout-content
             const bombCoordinates = data.bombCoordinates;
             const rows = data.rows;
             const cols = data.cols;
-            startButton.style.display = "none";
+            startDiv.style.display = "none";
             //const rows = data.rows;
             //const cols = data.cols;
             resultContainer.style.display = "none";
@@ -115,5 +123,9 @@ block layout-content
             results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
             results.innerText = results.innerText + "\n" + resultsText;
             clickStartButton = 0;
-            startButton.style.display = "block";
+            if (username === users[0]) {
+                startDiv.style.display = "block";
+            } else {
+                startDiv.style.display = "none";
+            }
         })

@@ -10,6 +10,10 @@ setupDatabase()
     .then((database) => {
         db = database;
         console.log("Database created socket.js");
+        roomFunctions.deleteAllRoomData(db)
+            .then(() => {
+                console.log("All room data deleted");
+            });
     });
 
 // Logger
@@ -17,10 +21,6 @@ const Logger = require('../logger/logger');
 const {verifyTokenAdmin} = require("../miscFunction");
 const logger = new Logger();
 logger.resetLogFile();
-roomFunctions.deleteAllRoomData(db)
-    .then(() => {
-        console.log("All room data deleted");
-    });
 
 function generateBombCoordinates(length, width, numBombs) {
     const bombCoordinates = [];
@@ -148,8 +148,8 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
 
         socket.on('startVersusGame', async (data) => {
             const roomName = data.roomName;
-            const rows = 10;
-            const cols = 10;
+            const rows = data.rows ? data.rows : 10;
+            const cols = data.cols ? data.cols : 10;
             if (!await roomFunctions.checkIfRoomExists(db, roomName)) {
                 await roomFunctions.setRoomData(db, roomName, rows, cols);
             }
