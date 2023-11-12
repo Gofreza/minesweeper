@@ -82,7 +82,6 @@ function getCookie(cookieName) {
 document.addEventListener('DOMContentLoaded', async function () {
     const canvas = document.getElementById('minesweeperCanvas');
     const ctx = canvas.getContext('2d');
-    let zoomFactor = 1;
     let isGameWin = false;
 
     //Timer
@@ -104,8 +103,68 @@ document.addEventListener('DOMContentLoaded', async function () {
     let canvasWidth = cellSize * numCols; // Calculate the canvas width
     let canvasHeight = cellSize * numRows; // Calculate the canvas height
 
+    // Constants for long press (right-click) handling
+    const longPressDuration = 500; // milliseconds
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchTimeout;
+
     canvas.width = canvasWidth; // Set the canvas width
     canvas.height = canvasHeight; // Set the canvas height
+
+    const initialZoomFactor = 1;
+    const zoomStep = 0.1;
+
+    let zoomFactor = initialZoomFactor;
+
+    const getGridCoordinates = (clientX, clientY) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        // Convert clicked coordinates to grid coordinates
+        const row = Math.floor(y / (cellSize * zoomFactor));
+        const col = Math.floor(x / (cellSize * zoomFactor));
+
+        return { row, col };
+    };
+
+    function updateCanvasSize() {
+        // Update the canvas width and height based on the zoom factor
+        const newWidth = canvasWidth * zoomFactor;
+        const newHeight = canvasHeight * zoomFactor;
+
+        // Set the new canvas size
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Translate the canvas to keep the top fixed
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        // Adjust the content to the new zoom factor
+        ctx.scale(zoomFactor, zoomFactor);
+
+        // Redraw your Minesweeper grid with the updated size
+        for (let row = 0; row < numRows; row++) {
+            for (let col = 0; col < numCols; col++) {
+                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
+                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+            }
+        }
+    }
+
+    document.getElementById('zoomInButton').addEventListener('click', function () {
+        zoomFactor += zoomStep;
+        updateCanvasSize();
+    });
+
+    document.getElementById('zoomOutButton').addEventListener('click', function () {
+        zoomFactor -= zoomStep;
+        updateCanvasSize();
+    });
 
     function startTimer() {
         if (!isGameStarted) {
@@ -167,6 +226,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     }
 
+    function removeTouchListeners() {
+        canvas.removeEventListener('touchstart', touchStartHandler);
+        canvas.removeEventListener('touchend', touchEndHandler);
+    }
+
+    function addTouchListeners() {
+        canvas.addEventListener('touchstart', touchStartHandler);
+        canvas.addEventListener('touchend', touchEndHandler);
+    }
 
     function removeClickListeners() {
         canvas.removeEventListener('click', clickHandler);
@@ -218,13 +286,89 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    // Touch start for long press (right-click)
+    function touchStartHandler(event) {
+        event.preventDefault();
+        const { row, col } = getGridCoordinates(event.touches[0].clientX, event.touches[0].clientY);
+        startTimer();
+
+        // Store the coordinates and start a timeout
+        touchStartX = x;
+        touchStartY = y;
+        touchTimeout = setTimeout(() => {
+            // Handle long press (right-click) logic here
+            grid.revealCell(row, col, true);
+
+            // Clear the canvas and redraw the grid
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let row = 0; row < numRows; row++) {
+                for (let col = 0; col < numCols; col++) {
+                    grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
+                    ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                }
+            }
+
+            // Update the bombs counter
+            if (!grid.matrix[row][col].isVisible() && grid.matrix[row][col].isFlagged() ) {
+                bombsDiv.innerHTML = (parseInt(bombsDiv.innerHTML) - 1).toString();
+            }
+            if (!grid.matrix[row][col].isVisible() && !grid.matrix[row][col].isFlagged()) {
+                bombsDiv.innerHTML = (parseInt(bombsDiv.innerHTML) + 1).toString();
+            }
+
+            if (checkIfGameEnded()) {
+                isGameWin = true;
+                stopTimer();
+                gameEnded = true;
+                removeClickListeners();
+                removeTouchListeners();
+                isGameWon();
+            }
+        }, longPressDuration);
+    }
+
+    // Touch end
+    function touchEndHandler(event) {
+        event.preventDefault();
+
+        // Clear the timeout to prevent it from triggering after a short press
+        clearTimeout(touchTimeout);
+
+        // Handle touchend (left-click) logic here
+        const { row, col } = getGridCoordinates(event.touches[0].clientX, event.touches[0].clientY);
+        startTimer();
+
+        // Handle left clicks
+        if (grid.matrix[row][col].isVisible()) {
+            // ... (Your existing left-click logic)
+        } else {
+            grid.revealCell(row, col, false);
+        }
+
+        // Clear the canvas and redraw the grid
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let row = 0; row < numRows; row++) {
+            for (let col = 0; col < numCols; col++) {
+                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
+                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+            }
+        }
+
+        if (checkIfClickedCellIsBomb(row, col)) {
+            lose();
+        } else if (checkIfGameEnded()) {
+            isGameWin = true;
+            stopTimer();
+            gameEnded = true;
+            removeClickListeners();
+            removeTouchListeners();
+            isGameWon();
+        }
+    }
+
     //Left click
     function clickHandler(event) {
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const row = Math.floor(y / cellSize * zoomFactor);
-        const col = Math.floor(x / cellSize * zoomFactor);
+        const { row, col } = getGridCoordinates(event.clientX, event.clientY);
         //console.log(`Left-clicked on cell (${row}, ${col})`);
         startTimer();
 
@@ -264,6 +408,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             stopTimer();
             gameEnded = true;
             removeClickListeners();
+            removeTouchListeners();
             isGameWon();
         }
     }
@@ -271,11 +416,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     //Right Click
     function contextMenuHandler(event) {
         event.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const row = Math.floor(y / cellSize);
-        const col = Math.floor(x / cellSize);
+        const { row, col } = getGridCoordinates(event.clientX, event.clientY);
         //console.log(`Right-clicked on cell (${row}, ${col})`);
         startTimer();
 
@@ -305,6 +446,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             //console.log("Game Over! You win!");
             gameEnded = true;
             removeClickListeners();
+            removeTouchListeners();
             isGameWon();
         }
     }
@@ -333,6 +475,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     let gameEnded = false;
     addClickListeners();
+    addTouchListeners();
 
     const grid = new Grid(numRows, numCols, numBombs, bombCoordinates); // Creating a new Grid
     //const gridTest = new Grid(15, 10, 10);

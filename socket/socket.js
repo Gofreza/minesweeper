@@ -54,8 +54,17 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         connectedSockets.push(socket);
 
         socket.on('createRoom', (data) => {
-            const roomName = data.inputValue;
-            const username = data.inputName;
+            let roomName = data.inputValue;
+            let username = data.inputName;
+
+            const maxCharacterLimit = 30;
+            if (roomName.length > maxCharacterLimit) {
+                roomName = roomName.substring(0, maxCharacterLimit); // Trim the message
+            }
+            if (username.length > maxCharacterLimit) {
+                username = username.substring(0, maxCharacterLimit); // Trim the message
+            }
+
             if (!rooms[roomName]) {
                 socket.join(roomName);
                 socket.handshake.session.room = roomName;
@@ -74,8 +83,17 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         });
 
         socket.on('joinRoom', (data) => {
-            const roomName = data.inputValue;
-            const username = data.inputName;
+            let roomName = data.inputValue;
+            let username = data.inputName;
+
+            const maxCharacterLimit = 30;
+            if (roomName.length > maxCharacterLimit) {
+                roomName = roomName.substring(0, maxCharacterLimit); // Trim the message
+            }
+            if (username.length > maxCharacterLimit) {
+                username = username.substring(0, maxCharacterLimit); // Trim the message
+            }
+
             if (rooms[roomName] /*&& rooms[roomName].slot < 2*/ && !rooms[roomName].started) {
                 socket.join(roomName);
                 socket.handshake.session.room = roomName;
@@ -87,10 +105,8 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                     users: rooms[roomName].users,
                     username: username,
                 });
+                logger.log(`${socket.handshake.session.id} : ${username} joined room ${roomName}`)
             }
-
-            console.log(rooms)
-            logger.log(`${socket.handshake.session.id} : ${username} joined room ${roomName}`)
         });
 
         socket.on('quitRoom', async (data) => {
@@ -199,6 +215,18 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         socket.on('notReady' , (data) => {
               io.to(data.roomName).emit('notReadyReceive' , data);
         })
+
+        // Chat
+
+        socket.on('sendMessage', (data) => {
+            const roomName = data.roomName;
+            const username = data.username;
+            const message = data.message;
+            io.to(roomName).emit('receiveMessage', {
+                username: username,
+                message: message,
+            });
+        });
 
         // Other
 

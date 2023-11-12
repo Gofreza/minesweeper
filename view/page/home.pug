@@ -1,5 +1,7 @@
 extends ../layout/base
 
+block css
+    link(rel="stylesheet" href="/css/table.css")
 block layout-content
     html
         head
@@ -29,7 +31,13 @@ block layout-content
                         input(id="inputNameJoinRoom" autocomplete="off")
                         button Join Room
                     button(onclick="getRooms()") Get Rooms
-                    span(id="roomList")
+                    table(id="roomList")
+                        thead
+                            tr
+                                th Room Name
+                                th Users
+                                th Players Number
+                        tbody
     script.
         // Connect to the socket.io server
         const socket = io();
@@ -72,16 +80,18 @@ block layout-content
         }
 
         socket.on('roomList', (roomData) => {
-            const roomList = document.getElementById('roomList');
+            const roomList = document.getElementById('roomList').getElementsByTagName('tbody')[0];
             roomList.innerHTML = '';
 
             roomData.forEach((room) => {
-                const listItem = document.createElement('li');
-                const roomInfo = document.createTextNode(
-                    `Room: ${room.roomName}, Users: ${room.users.join(', ')}, Players Number: ${room.slot}`
-                );
-                listItem.appendChild(roomInfo);
-                roomList.appendChild(listItem);
+                const row = roomList.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+
+                cell1.innerText = room.roomName;
+                cell2.innerText = room.users.join(', ');
+                cell3.innerText = room.slot;
             });
         });
 
@@ -112,4 +122,6 @@ block layout-content
                 console.error('Error during fetch:', error);
             }
         });
+
+
 

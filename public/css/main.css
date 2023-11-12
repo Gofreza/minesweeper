@@ -5,6 +5,8 @@ html, body {
     padding: 0;
     color: black;
     background-attachment: fixed;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 a:visited, a:link {
@@ -106,8 +108,13 @@ a:visited, a:link {
     padding: 10px;
 }
 
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .buttons {
-    display: none;
     justify-content: center;
     align-items: flex-start;
 }
@@ -117,6 +124,11 @@ button {
     margin: 5px;
     padding: 5px;
     border-radius: 20%;
+    background-color: lightgray;
+}
+
+button:hover {
+    background-color: gray;
 }
 
 canvas {
@@ -161,3 +173,40 @@ canvas {
     background-color: lightgray;
     border: solid 1px black;
 }
+
+.icon {
+    display: none;
+}
+
+@media screen and (max-width: 600px) {
+    .page-container {
+        padding: 10px;
+    }
+
+    .menu {
+        height: auto;
+        flex-direction: column; /* Change to column layout */
+        align-items: flex-start; /* Align items to the start (left) */
+    }
+
+    .menu-item:not(.icon) {
+        display: none;
+    }
+
+    .menu.active .menu-item:not(.icon) {
+        display: block;
+    }
+
+    .icon {
+        display: block;
+    }
+
+    .menu-item.icon:hover .dropdown-content {
+        display: none;
+    }
+
+    .menu-item.icon.active .dropdown-content {
+        display: block;
+    }
+}
+

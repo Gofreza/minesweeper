@@ -1,5 +1,7 @@
 extends ../layout/base
 
+block css
+    link(rel="stylesheet" href="/css/chat.css")
 block layout-content
     .page-container
         h1(id='title')
@@ -16,14 +18,20 @@ block layout-content
                 label(for="cols") Cols:
                 input(type="number" id="cols" name="cols" min="5" max="100" value="10")
             button(id="startGameButton" onclick="startGame()") Start Game
-    div.page-container
-        .canvas-container
-            .info-container
-                .bombs-container
-                    canvas(id="bombsCanvas")
-                    div(id="bombs") 0
-                div(id="timer") 0
-            canvas(id="minesweeperCanvas")
+    .page-container
+        .game-container
+            .canvas-container
+                .info-container
+                    .bombs-container
+                        canvas(id="bombsCanvas")
+                        div(id="bombs") 0
+                    div(id="timer") 0
+                canvas(id="minesweeperCanvas")
+            .chat-container
+                div(id="chat")
+                    div(id="chat-messages")
+                input(type="text" id="message-input" placeholder="Type your message...")
+                button(id="send-message" onclick="sendMessage()") Send
     div(id="resultContainer").results-container
         h1 Results
         div(id="results")
@@ -31,6 +39,10 @@ block layout-content
         h1 Waiting for other players...
     script.
         const socket = io();
+
+        // ========
+        // GAME
+        // ========
 
         let isScriptAppended = false;
 
@@ -105,20 +117,24 @@ block layout-content
         }
 
         socket.on('notReadyReceive', (data) => {
-            //console.log('notReadyRecive', data);
-            updateReadyCount(--userReady)
-            if (username !== users[0]) {
-                readyButton.style.display = "block";
-                notReadyButton.style.display = "none";
+            if (!isReady) {
+                //console.log('notReadyRecive', data);
+                updateReadyCount(--userReady)
+                if (username !== users[0]) {
+                    readyButton.style.display = "block";
+                    notReadyButton.style.display = "none";
+                }
             }
         });
 
         socket.on('readyReceive', (data) => {
-            //console.log('readyRecive', data);
-            updateReadyCount(++userReady)
-            if (username !== users[0]) {
-                readyButton.style.display = "none";
-                notReadyButton.style.display = "block";
+            if (isReady) {
+                //console.log('readyRecive', data);
+                updateReadyCount(++userReady)
+                if (username !== users[0]) {
+                    readyButton.style.display = "none";
+                    notReadyButton.style.display = "block";
+                }
             }
         });
 
@@ -197,3 +213,33 @@ block layout-content
                 readyButton.style.display = "block";
             }
         })
+
+        // =======
+        // CHAT
+        // =======
+
+        const chatDiv = document.getElementById('chat-messages');
+
+        function sendMessage() {
+            const chatInput = document.getElementById('message-input');
+            let message = chatInput.value;
+
+            // Enforce a maximum character limit (e.g., 144 characters)
+            const maxCharacterLimit = 144;
+            if (message.length > maxCharacterLimit) {
+                message = message.substring(0, maxCharacterLimit); // Trim the message
+            }
+
+            chatInput.value = '';
+
+            socket.emit('sendMessage', {roomName, username, message});
+        }
+
+        socket.on('receiveMessage', (data) => {
+            const {username, message} = data;
+            const messageElement = document.createElement('p');
+            messageElement.innerText = `${username}: ${message}`;
+            chatDiv.appendChild(messageElement);
+        });
+
+
