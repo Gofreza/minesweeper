@@ -1,35 +1,43 @@
 extends ../layout/base
 
+block css
+    link(rel='stylesheet', href='/css/table.css')
 block layout-content
     h1 Admin Dashboard
     p Welcome to the admin dashboard
     button#forceDisconnect Force Disconnect
     button#btnGetAllUsers Get All Users
-    div#allUsers
+    div(id="allUsers")
+        div(id="counterContainer")
+            p(id="counter") Counter: 0
+        table(id="usersTable")
+            thead
+                tr
+                    th User ID
+                    th Username
+            tbody
+
     script.
         const socket = io();
         document.getElementById('btnGetAllUsers').addEventListener('click', function () {
-            const divAllUsers = document.getElementById('allUsers');
+            const tableBody = document.querySelector('#usersTable tbody');
+            const counterP = document.getElementById('counter');
+
             fetch('/api/getAllUsers')
                 .then(res => res.json())
                 .then(data => {
-                    divAllUsers.innerHTML = '';
+                    tableBody.innerHTML = '';
                     let peoples = 0;
-                    for (const key in data) {
-                        //console.log(data)
-                        if (data.hasOwnProperty(key)) {
-                            peoples++;
-                            const p = document.createElement('p');
-                            p.innerText = `${data[0].userId}: ${data[0].username}`;
-                            divAllUsers.appendChild(p);
-                        }
+
+                    for (const user of data) {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${user.userId}</td><td>${user.username}</td>`;
+                        tableBody.appendChild(tr);
+                        peoples++;
                     }
 
-                    // Print counter
-                    const counterP = document.createElement('p');
                     counterP.innerText = `Counter: ${peoples}`;
-                    divAllUsers.appendChild(counterP);
-                })
+                });
         });
 
         document.getElementById('forceDisconnect').addEventListener('click', function () {

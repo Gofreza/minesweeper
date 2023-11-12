@@ -78,7 +78,7 @@ block layout-content
             roomData.forEach((room) => {
                 const listItem = document.createElement('li');
                 const roomInfo = document.createTextNode(
-                    `Room: ${room.roomName}, Users: ${room.users.join(', ')}, Slot: ${room.slot}/2`
+                    `Room: ${room.roomName}, Users: ${room.users.join(', ')}, Players Number: ${room.slot}`
                 );
                 listItem.appendChild(roomInfo);
                 roomList.appendChild(listItem);

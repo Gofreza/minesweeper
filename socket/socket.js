@@ -76,7 +76,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         socket.on('joinRoom', (data) => {
             const roomName = data.inputValue;
             const username = data.inputName;
-            if (rooms[roomName] && rooms[roomName].slot < 2 && !rooms[roomName].started) {
+            if (rooms[roomName] /*&& rooms[roomName].slot < 2*/ && !rooms[roomName].started) {
                 socket.join(roomName);
                 socket.handshake.session.room = roomName;
                 socket.handshake.session.username = username;

@@ -9,9 +9,9 @@ block layout-content
         div(id="startGame")
             form(id="startForm")
                 label(for="rows") Rows:
-                input(type="number" id="rows" name="rows" min="1" max="100" value="10")
+                input(type="number" id="rows" name="rows" min="5" max="100" value="10")
                 label(for="cols") Cols:
-                input(type="number" id="cols" name="cols" min="1" max="100" value="10")
+                input(type="number" id="cols" name="cols" min="5" max="100" value="10")
             button(id="startGameButton" onclick="startGame()") Start Game
     div.page-container
         .canvas-container
@@ -77,6 +77,8 @@ block layout-content
         function startGame() {
             const rows = document.getElementById("rows").value;
             const cols = document.getElementById("cols").value;
+            // Check rows and cols values
+
             resultContainer.style.display = "none";
             socket.emit('startVersusGame', {roomName, rows, cols});
             startDiv.style.display = "none";
