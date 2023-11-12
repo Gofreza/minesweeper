@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const port = 8000;
@@ -34,20 +35,23 @@ const sessionMiddleware = session({
     saveUninitialized: true
 });
 app.use(sessionMiddleware);
+app.use(cookieParser());
 
 // *********************
 // *** Socket config ***
 // *********************
 
 const configureSocket = require('./socket/socket');
-configureSocket(server, sessionMiddleware);
+configureSocket(server, sessionMiddleware, app);
 
 // ********************
 // *** Route config ***
 // ********************
 
+const authRoutes = require('./route/auth');
+const adminRoutes = require('./route/admin');
 const testRoutes = require('./route/global');
-app.use(testRoutes);
+app.use(authRoutes, testRoutes, adminRoutes);
 
 // ********************
 // *** Start server ***

@@ -6,6 +6,7 @@ const logger = new Logger();
 
 const setupDatabase = require('../database/dbSetup');
 const roomFunctions = require('../database/dbRoom');
+const {verifyTokenAdmin} = require("../miscFunction");
 let db;
 setupDatabase()
     .then((database) => {
@@ -17,7 +18,7 @@ router.get('/', (req, res) => {
     const sessionId = req.sessionID;
     //console.log('Express Session ID:', sessionId);
     //Put the sessionId inside a cookie
-    res.cookie('sessionId', sessionId);
+    res.cookie('sessionId', sessionId, {httpOnly: true});
     res.render("../view/page/home.pug", {
         title:"Home",
         boardLength: 5,
@@ -71,7 +72,5 @@ router.get('/room', (req, res) => {
         username:username,
     });
 });
-
-
 
 module.exports = router;

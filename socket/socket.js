@@ -14,8 +14,13 @@ setupDatabase()
 
 // Logger
 const Logger = require('../logger/logger');
+const {verifyTokenAdmin} = require("../miscFunction");
 const logger = new Logger();
 logger.resetLogFile();
+roomFunctions.deleteAllRoomData(db)
+    .then(() => {
+        console.log("All room data deleted");
+    });
 
 function generateBombCoordinates(length, width, numBombs) {
     const bombCoordinates = [];
@@ -33,9 +38,8 @@ function generateBombCoordinates(length, width, numBombs) {
     return bombCoordinates;
 }
 
-
 // Export a function that takes the server instance and session middleware
-module.exports = function configureSocket(server, sessionMiddleware) {
+module.exports = function configureSocket(server, sessionMiddleware, app) {
     const io = new Server(server, { connectionStateRecovery: {} });
     io.use(sharedSession(sessionMiddleware, {
         autoSave: true
@@ -43,31 +47,36 @@ module.exports = function configureSocket(server, sessionMiddleware) {
 
     //Socket
     let rooms = {};
+    let connectedSockets = [];
 
     io.on('connection', (socket) => {
-        logger.log('A User connected: ' + socket.handshake.session.id);
+        logger.log('A User connected: ' + socket.handshake.session.id + (socket.handshake.session.username ? ' (' + socket.handshake.session.username + ')' : ''));
+        connectedSockets.push(socket);
 
         socket.on('createRoom', (data) => {
             const roomName = data.inputValue;
             const username = data.inputName;
-            socket.join(roomName);
-            socket.handshake.session.room = roomName;
-            socket.handshake.session.username = username;
+            if (!rooms[roomName]) {
+                socket.join(roomName);
+                socket.handshake.session.room = roomName;
+                socket.handshake.session.username = username;
 
-            rooms[roomName] = { users: [username], slot: 1};
-            io.to(roomName).emit('roomData', {
-                roomName: roomName,
-                users: rooms[roomName].users,
-                username: username,
-            });
+                rooms[roomName] = {users: [username], slot: 1, started: false};
+                io.to(roomName).emit('roomData', {
+                    roomName: roomName,
+                    users: rooms[roomName].users,
+                    username: username,
+                });
 
-            logger.log(`${socket.handshake.session.id} : ${username} created room ${roomName} and join !`);
+                console.log(rooms)
+                logger.log(`${socket.handshake.session.id} : ${username} created room ${roomName} and join !`);
+            }
         });
 
         socket.on('joinRoom', (data) => {
             const roomName = data.inputValue;
             const username = data.inputName;
-            if (rooms[roomName] && rooms[roomName].slot < 2) {
+            if (rooms[roomName] && rooms[roomName].slot < 2 && !rooms[roomName].started) {
                 socket.join(roomName);
                 socket.handshake.session.room = roomName;
                 socket.handshake.session.username = username;
@@ -80,6 +89,7 @@ module.exports = function configureSocket(server, sessionMiddleware) {
                 });
             }
 
+            console.log(rooms)
             logger.log(`${socket.handshake.session.id} : ${username} joined room ${roomName}`)
         });
 
@@ -89,7 +99,6 @@ module.exports = function configureSocket(server, sessionMiddleware) {
             if (rooms[roomName]) {
                 socket.leave(roomName);
                 socket.handshake.session.room = undefined;
-                socket.handshake.session.username = undefined;
                 rooms[roomName].users = rooms[roomName].users.filter((user) => {
                     return user !== username;
                 });
@@ -105,6 +114,7 @@ module.exports = function configureSocket(server, sessionMiddleware) {
                 }
             }
 
+            console.log(rooms)
             logger.log(`${socket.handshake.session.id} : ${username} quit room ${roomName}`)
         } );
 
@@ -130,7 +140,8 @@ module.exports = function configureSocket(server, sessionMiddleware) {
 
         socket.on('disconnect', () => {
             //console.log(`User disconnected: ${socket.id}`);
-            logger.log(`User disconnected: ${socket.handshake.session.id}`);
+            logger.log('User disconnected: ' + socket.handshake.session.id + (socket.handshake.session.username ? ' (' + socket.handshake.session.username + ')' : ''));
+            connectedSockets = connectedSockets.filter(s => s !== socket);
         });
 
         // Versus
@@ -145,6 +156,9 @@ module.exports = function configureSocket(server, sessionMiddleware) {
             const numBombs = Math.floor(rows * cols * parseFloat(process.env.BOMB_DENSITY_NORMAL));
             const bombCoordinates = generateBombCoordinates(rows, cols, numBombs);
 
+            rooms[roomName].started = true;
+            console.log("startVersusGame server side in room " + roomName + " with " + numBombs + " bombs !")
+
             io.to(roomName).emit('receiveVersusGame', {
                 numBombs: numBombs,
                 bombCoordinates: bombCoordinates,
@@ -158,7 +172,7 @@ module.exports = function configureSocket(server, sessionMiddleware) {
             const result = data.result;
             const roomName = data.roomName;
             const username = data.username;
-            const playerNumber = rooms[roomName].slot
+            const playerNumber = rooms[roomName].users.length;
             //console.log("Game finished server side in room " + roomName + " with result " + username + " : " + result + " !");
             logger.log(`${socket.handshake.session.id} : ${socket.handshake.session.username} finished his game in room ${roomName} with result ${result}`)
             // Put result in the db
@@ -172,7 +186,27 @@ module.exports = function configureSocket(server, sessionMiddleware) {
                 const allResults = await userFunctions.getResultsFromRoomName(db, roomName);
                 io.to(roomName).emit('versusGameResult', {result:results.score, winner:results.username, results:allResults});
                 await userFunctions.deleteAllUserScores(db, roomName);
+                rooms[roomName].started = false;
             }
         })
+
+        // Other
+
+        app.post('/emit-test-event/:roomName', (req, res) => {
+            const { roomName } = req.params;
+
+            io.to(roomName).emit(roomName, 'message from server');
+
+            res.status(200).json({ success: true });
+        });
+
+        app.post('/forceDisconnect', verifyTokenAdmin, (req, res) => {
+            console.log('forceDisconnect');
+
+            // Disconnect all connected sockets
+            connectedSockets.forEach(socket => socket.disconnect());
+
+            res.status(200).json({ success: true });
+        });
     });
 };

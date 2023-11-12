@@ -6,7 +6,7 @@ block layout-content
             span#modify Room: #{roomName}, Users: #{users},
             span#username You: #{username}
         button(onclick="quitRoom()") Quit
-        button(onclick="startGame()") Start Game
+        button(id="startGame" onclick="startGame()") Start Game
     div.page-container
         .canvas-container
             .info-container
@@ -18,6 +18,8 @@ block layout-content
     div(id="resultContainer").results-container
         h1 Results
         div(id="results")
+    div(id="waiting").results-container
+        h1 Waiting for other players...
     script.
         const socket = io();
 
@@ -25,27 +27,11 @@ block layout-content
 
         const resultContainer = document.getElementById("resultContainer");
         const results = document.getElementById("results");
-
-        // Function to get the value of a cookie by name
-        function getCookie(cookieName) {
-            const name = cookieName + "=";
-            const decodedCookie = decodeURIComponent(document.cookie);
-            const cookieArray = decodedCookie.split(';');
-
-            for (let i = 0; i < cookieArray.length; i++) {
-                let cookie = cookieArray[i];
-                while (cookie.charAt(0) === ' ') {
-                    cookie = cookie.substring(1);
-                }
-                if (cookie.indexOf(name) === 0) {
-                    return cookie.substring(name.length, cookie.length);
-                }
-            }
-            return null;
-        }
-
         const title = document.getElementById("modify");
         const username = document.getElementById("username").innerText.split(" ")[1];
+        const startButton = document.getElementById("startGame");
+        const waiting = document.getElementById("waiting");
+        let clickStartButton = 0;
 
         function updateTitle(room, userList) {
             title.innerText = `Room: ${room}, Users: ${userList.join(", ")} `;
@@ -54,10 +40,24 @@ block layout-content
         let roomName;
         let users;
 
+        if (!isScriptAppended) {
+            const script = document.createElement('script');
+            script.src = `/js/versus.bundle.js`;
+            document.body.appendChild(script);
+            isScriptAppended = true; // Mark the script as appended
+        }
+
         socket.on('roomData', (data) => {
             //console.log('Room data:', data);
             roomName = data.roomName;
             users = data.users;
+            // First to join is host (first in the list)
+            if (username === users[0]){
+                startButton.style.display = "block";
+            }
+            else {
+                startButton.style.display = "none";
+            }
             //console.log("Users: ", users);
             updateTitle(roomName, users);
         });
@@ -66,10 +66,12 @@ block layout-content
             socket.emit('quitRoom', {roomName, username});
             window.location.href = '/';
         }
+
         function startGame() {
             // Other logic...
             resultContainer.style.display = "none";
             socket.emit('startVersusGame', {roomName});
+            startButton.style.display = "none";
         }
 
         socket.on('receiveVersusGame', (data) => {
@@ -77,19 +79,17 @@ block layout-content
             const bombCoordinates = data.bombCoordinates;
             const rows = data.rows;
             const cols = data.cols;
+            startButton.style.display = "none";
             //const rows = data.rows;
             //const cols = data.cols;
             resultContainer.style.display = "none";
 
-            if (!isScriptAppended) {
-                const script = document.createElement('script');
-                script.src = `/js/versus.bundle.js`;
-                document.body.appendChild(script);
-                isScriptAppended = true; // Mark the script as appended
-            }
-
             //console.log('rows', rows, 'cols', cols);
             document.dispatchEvent(new CustomEvent('startVersusGameEvent', {detail: {numBombs, bombCoordinates, rows, cols}}));
+        });
+
+        socket.on('test', (data) => {
+            console.log('test', data);
         });
 
         // Wait for the 'endGame' event to be dispatched
@@ -97,6 +97,7 @@ block layout-content
             //console.log('endVersusGame event received');
             const {result} = event.detail;
             // Emit a signal to the socket
+            waiting.style.display = "block";
             socket.emit('gameFinished', {result, roomName, username});
         });
 
@@ -104,6 +105,7 @@ block layout-content
             //console.log("Game result:", data);
             const allResults = data.results;
             const sortedResults = allResults.sort((a, b) => a.score - b.score);
+            waiting.style.display = "none";
             resultContainer.style.display = "flex";
             // Build a string with results
             let resultsText = "Results:\n";
@@ -112,4 +114,6 @@ block layout-content
             });
             results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
             results.innerText = results.innerText + "\n" + resultsText;
+            clickStartButton = 0;
+            startButton.style.display = "block";
         })

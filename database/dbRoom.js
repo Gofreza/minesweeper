@@ -112,7 +112,31 @@ async function deleteRoomData(db, roomName) {
     });
 }
 
+/**
+ * Deletes all room data from the 'roomData' table.
+ * @param {Object} db - The database object.
+ * @returns {Promise<unknown>} A promise that resolves with the number of rows deleted when the room data is successfully deleted from the 'roomData' table.
+ */
+async function deleteAllRoomData(db) {
+    // SQL query to delete room data from the 'roomData' table based on the room name
+    const sql = `DELETE FROM roomData`;
+
+    // Return a Promise for asynchronous handling
+    return new Promise((resolve, reject) => {
+        // Execute the SQL query using the 'db.run' method
+        db.run(sql, [], function (err) {
+            // If there's an error, reject the promise with the error message
+            if (err) {
+                console.error("Error deleteAllRoomData:", err.message);
+                reject(err);
+            } else {
+                // Resolve the promise with the number of rows deleted
+                resolve(this.changes);
+            }
+        });
+    });
+}
 
 module.exports = {
-    getRoomData, deleteRoomData, setRoomData, checkIfRoomExists,
+    getRoomData, deleteRoomData, setRoomData, checkIfRoomExists, deleteAllRoomData,
 }

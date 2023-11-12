@@ -4,6 +4,7 @@ logger/app.log
 *.log
 .idea/
 node_modules/
+test.js
 .DS_Store
 .env
 ```

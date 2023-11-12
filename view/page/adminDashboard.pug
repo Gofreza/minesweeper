@@ -1,0 +1,49 @@
+extends ../layout/base
+
+block layout-content
+    h1 Admin Dashboard
+    p Welcome to the admin dashboard
+    button#forceDisconnect Force Disconnect
+    button#btnGetAllUsers Get All Users
+    div#allUsers
+    script.
+        const socket = io();
+        document.getElementById('btnGetAllUsers').addEventListener('click', function () {
+            const divAllUsers = document.getElementById('allUsers');
+            fetch('/api/getAllUsers')
+                .then(res => res.json())
+                .then(data => {
+                    divAllUsers.innerHTML = '';
+                    let peoples = 0;
+                    for (const key in data) {
+                        //console.log(data)
+                        if (data.hasOwnProperty(key)) {
+                            peoples++;
+                            const p = document.createElement('p');
+                            p.innerText = `${data[0].userId}: ${data[0].username}`;
+                            divAllUsers.appendChild(p);
+                        }
+                    }
+
+                    // Print counter
+                    const counterP = document.createElement('p');
+                    counterP.innerText = `Counter: ${peoples}`;
+                    divAllUsers.appendChild(counterP);
+                })
+        });
+
+        document.getElementById('forceDisconnect').addEventListener('click', function () {
+            fetch('/forceDisconnect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
