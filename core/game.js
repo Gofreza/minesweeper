@@ -79,6 +79,18 @@ function getCookie(cookieName) {
     return null;
 }
 
+function setCookie(name, value, days) {
+    let expires = "";
+
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+
+    document.cookie = name + "=" + value + expires + "; path=/";
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
     const canvas = document.getElementById('minesweeperCanvas');
     const ctx = canvas.getContext('2d');
@@ -256,10 +268,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    function win(){
-
-    }
-
     function lose(){
         //console.log("Game Over! You clicked on a bomb.");
         stopTimer()
@@ -289,12 +297,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Touch start for long press (right-click)
     function touchStartHandler(event) {
         event.preventDefault();
-        const { row, col } = getGridCoordinates(event.touches[0].clientX, event.touches[0].clientY);
+        const {row, col} = getGridCoordinates(event.changedTouches[0].clientX, event.changedTouches[0].clientY)
         startTimer();
 
         // Store the coordinates and start a timeout
-        touchStartX = x;
-        touchStartY = y;
+        touchStartX = row;
+        touchStartY = col;
         touchTimeout = setTimeout(() => {
             // Handle long press (right-click) logic here
             grid.revealCell(row, col, true);
@@ -335,7 +343,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         clearTimeout(touchTimeout);
 
         // Handle touchend (left-click) logic here
-        const { row, col } = getGridCoordinates(event.touches[0].clientX, event.touches[0].clientY);
+        const {row, col} = getGridCoordinates(event.changedTouches[0].clientX, event.changedTouches[0].clientY)
+
         startTimer();
 
         // Handle left clicks
