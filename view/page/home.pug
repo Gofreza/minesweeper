@@ -9,11 +9,10 @@ block layout-content
             .page-container
                 h1 Solo
                     form(action='/createGrid', method='POST')
-                        label(for='rows') Rows:
-                        input(type='text', name='rows', id='rows', required)
-
-                        label(for='cols') Cols:
-                        input(type='text', name='cols', id='cols', required)
+                        label(for="rows") Rows:
+                        input(type="number" id="rows" name="rows" min="5" max="100" value="10" required)
+                        label(for="cols") Cols:
+                        input(type="number" id="cols" name="cols" min="5" max="100" value="10" required)
 
                         button(type='submit') Play
                 h1 Multiplayer
@@ -32,7 +31,6 @@ block layout-content
                     button(onclick="getRooms()") Get Rooms
                     span(id="roomList")
     script.
-
         // Connect to the socket.io server
         const socket = io();
 
