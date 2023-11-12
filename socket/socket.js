@@ -96,6 +96,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         socket.on('quitRoom', async (data) => {
             const roomName = data.roomName;
             const username = data.username;
+            const usersReady = data.userReady;
             if (rooms[roomName]) {
                 socket.leave(roomName);
                 socket.handshake.session.room = undefined;
@@ -110,6 +111,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                     io.to(roomName).emit('roomData', {
                         roomName: roomName,
                         users: rooms[roomName].users,
+                        usersReady: usersReady,
                     });
                 }
             }
@@ -188,6 +190,14 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 await userFunctions.deleteAllUserScores(db, roomName);
                 rooms[roomName].started = false;
             }
+        })
+
+        socket.on('ready' , (data) => {
+            io.to(data.roomName).emit('readyReceive' , data);
+        })
+
+        socket.on('notReady' , (data) => {
+              io.to(data.roomName).emit('notReadyReceive' , data);
         })
 
         // Other

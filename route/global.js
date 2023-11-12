@@ -36,7 +36,17 @@ router.get('/test', (req, res) => {
 })
 
 router.post('/createGrid', (req, res) => {
-    const {rows, cols} = req.body;
+    let {rows, cols} = req.body;
+    if (rows < 5) {
+        rows = 5;
+    } else if (rows > 100) {
+        rows = 100;
+    }
+    if (cols < 5) {
+        cols = 5;
+    } else if (cols > 100) {
+        cols = 100;
+    }
     res.cookie('rows', rows);
     res.cookie('cols', cols);
     res.redirect('/test');

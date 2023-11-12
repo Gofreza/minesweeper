@@ -5,7 +5,10 @@ block layout-content
         h1(id='title')
             span#modify Room: #{roomName}, Users: #{users},
             span#username You: #{username}
+        div(id="readyCount") Ready: 0 / 0
         button(onclick="quitRoom()") Quit
+        button(id="ready" onclick="ready()") Ready
+        button(id="notReady" onclick="ready()") Not Ready
         div(id="startGame")
             form(id="startForm")
                 label(for="rows") Rows:
@@ -36,16 +39,23 @@ block layout-content
         const title = document.getElementById("modify");
         const username = document.getElementById("username").innerText.split(" ")[1];
         const startDiv = document.getElementById("startGame");
-        const startButton = document.getElementById("startGameButton");
+        const readyButton = document.getElementById("ready");
+        const notReadyButton = document.getElementById("notReady");
         const waiting = document.getElementById("waiting");
+        const readyCountElement = document.getElementById("readyCount");
         let clickStartButton = 0;
+        let isReady = false;
+        let userReady = 0;
+        let roomName;
+        let users;
 
         function updateTitle(room, userList) {
             title.innerText = `Room: ${room}, Users: ${userList.join(", ")} `;
         }
 
-        let roomName;
-        let users;
+        function updateReadyCount(count) {
+            readyCountElement.innerText = `Ready: ${count} / ${users.length - 1}`;
+        }
 
         if (!isScriptAppended) {
             const script = document.createElement('script');
@@ -58,28 +68,76 @@ block layout-content
             //console.log('Room data:', data);
             roomName = data.roomName;
             users = data.users;
+            if (userReady) {
+                userReady = data.usersReady;
+                updateReadyCount(userReady);
+            }
             // First to join is host (first in the list)
             if (username === users[0]){
                 startDiv.style.display = "block";
+                readyButton.style.display = "none";
+                notReadyButton.style.display = "none";
             }
             else {
                 startDiv.style.display = "none";
+                notReadyButton.style.display = "none";
             }
-            //console.log("Users: ", users);
+            updateReadyCount(userReady);
             updateTitle(roomName, users);
         });
 
         function quitRoom() {
-            socket.emit('quitRoom', {roomName, username});
+            if (username !== users[0] && isReady) {
+                updateReadyCount(--userReady)
+            }
+            socket.emit('quitRoom', {roomName, username, userReady});
             window.location.href = '/';
         }
+
+        function ready() {
+            if (isReady) {
+                socket.emit('notReady', {roomName, username});
+                isReady = false;
+            } else {
+                socket.emit('ready', {roomName, username});
+                isReady = true;
+            }
+        }
+
+        socket.on('notReadyReceive', (data) => {
+            //console.log('notReadyRecive', data);
+            updateReadyCount(--userReady)
+            if (username !== users[0]) {
+                readyButton.style.display = "block";
+                notReadyButton.style.display = "none";
+            }
+        });
+
+        socket.on('readyReceive', (data) => {
+            //console.log('readyRecive', data);
+            updateReadyCount(++userReady)
+            if (username !== users[0]) {
+                readyButton.style.display = "none";
+                notReadyButton.style.display = "block";
+            }
+        });
 
         function startGame() {
             const rows = document.getElementById("rows").value;
             const cols = document.getElementById("cols").value;
+            // verify rows and cols
+            if (rows < 5 || rows > 100 || cols < 5 || cols > 100) {
+                alert("Rows and cols must be between 5 and 100");
+                return;
+            }
+
             // Check rows and cols values
 
             resultContainer.style.display = "none";
+            if (userReady !== users.length - 1) {
+                alert("Not all users are ready!");
+                return;
+            }
             socket.emit('startVersusGame', {roomName, rows, cols});
             startDiv.style.display = "none";
         }
@@ -94,6 +152,9 @@ block layout-content
             //const cols = data.cols;
             resultContainer.style.display = "none";
 
+            readyButton.style.display = "none";
+            notReadyButton.style.display = "none";
+            readyCountElement.style.display = "none";
             //console.log('rows', rows, 'cols', cols);
             document.dispatchEvent(new CustomEvent('startVersusGameEvent', {detail: {numBombs, bombCoordinates, rows, cols}}));
         });
@@ -125,9 +186,14 @@ block layout-content
             results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
             results.innerText = results.innerText + "\n" + resultsText;
             clickStartButton = 0;
+            userReady = 0;
+            readyCountElement.style.display = "block";
+            updateReadyCount(userReady);
+            isReady = false;
             if (username === users[0]) {
                 startDiv.style.display = "block";
             } else {
                 startDiv.style.display = "none";
+                readyButton.style.display = "block";
             }
         })
