@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 const app = express();
+hostname = '0.0.0.0'
 const port = 3000;
 
 const http = require('http');
