@@ -4,21 +4,21 @@ module.exports = [
     {
         mode: 'production',
         entry: {
-            main: './core/game.js',
+            main: './src/core/game.js',
         },
         output: {
             filename: 'main.bundle.js',
-            path: path.resolve(__dirname, '../public/js'),
+            path: path.resolve(__dirname, '../../public/js'),
         },
     },
     {
         mode: 'production',
         entry: {
-            other: './core/gameVersus.js',
+            other: './src/core/gameVersus.js',
         },
         output: {
             filename: 'versus.bundle.js',
-            path: path.resolve(__dirname, '../public/js'),
+            path: path.resolve(__dirname, '../../public/js'),
         },
     }
 ];

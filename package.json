@@ -2,11 +2,11 @@
   "name": "minesweeper",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "main": "node app.js",
-    "bundle": "npx webpack --config core/webpack.config.js"
+    "start": "node src/app.js",
+    "build": "npx webpack --config src/core/webpack.config.js"
   },
   "keywords": [],
   "author": "",

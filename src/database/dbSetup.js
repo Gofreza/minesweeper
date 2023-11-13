@@ -15,7 +15,7 @@ function setupDatabase() {
     }
 
     return new Promise((resolve, reject) => {
-        const db = new sqlite3.Database('./database/database.db');
+        const db = new sqlite3.Database('./src/database/database.db');
         //console.log("Database created");
 
         // Create the user table if it doesn't exist
