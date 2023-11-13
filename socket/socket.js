@@ -209,11 +209,13 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         })
 
         socket.on('ready' , (data) => {
+            //console.log('ready', data.username)
             io.to(data.roomName).emit('readyReceive' , data);
         })
 
         socket.on('notReady' , (data) => {
-              io.to(data.roomName).emit('notReadyReceive' , data);
+            //console.log('notReady', data.username)
+            io.to(data.roomName).emit('notReadyReceive' , data);
         })
 
         // Chat

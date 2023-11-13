@@ -349,7 +349,22 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Handle left clicks
         if (grid.matrix[row][col].isVisible()) {
-            // ... (Your existing left-click logic)
+            if (grid.matrix[row][col].isVisible()) {
+                if (grid.matrix[row][col].getNumber() > 0 && !grid.matrix[row][col].hasBomb()) {
+                    const {isBomb, bombsList} = grid.revealNeighbours(row, col);
+                    //console.log(`isBomb: ${isBomb}, bombList: ${bombsList}`)
+                    if (isBomb) {
+                        for (const obj of bombsList) {
+                            const bombRow = obj.bombRow;
+                            const bombCol = obj.bombCol;
+                            if (!grid.matrix[bombRow][bombCol].getExploded()) {
+                                lose();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
         } else {
             grid.revealCell(row, col, false);
         }
