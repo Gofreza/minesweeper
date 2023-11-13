@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 const app = express();
-const port = 8000;
+const port = 3000;
 
 const http = require('http');
 const server = http.createServer(app); // Use http.createServer to create a server

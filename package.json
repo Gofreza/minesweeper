@@ -26,6 +26,7 @@
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.4.10",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"
   }
