@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 const app = express();
-hostname = '0.0.0.0'
 const port = 3000;
 
 const http = require('http');
@@ -58,6 +57,6 @@ app.use(authRoutes, testRoutes, adminRoutes);
 // *** Start server ***
 // ********************
 
-server.listen(3000, '0.0.0.0', () => {
+server.listen(3000, '::', () => {
     console.log(`Server running at http://0.0.0.0:${port}/`);
 });
