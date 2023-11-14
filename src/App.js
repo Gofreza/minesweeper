@@ -58,6 +58,6 @@ app.use(authRoutes, testRoutes, adminRoutes);
 // *** Start server ***
 // ********************
 
-server.listen(port, '0.0.0.0', () => {
+server.listen(3000, '0.0.0.0', () => {
     console.log(`Server running at http://0.0.0.0:${port}/`);
 });
