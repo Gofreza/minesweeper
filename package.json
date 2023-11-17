@@ -4,9 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/app.js",
-    "build": "npx webpack --config src/core/webpack.config.js"
+    "build": "npx webpack --config webpack.config.js"
   },
   "keywords": [],
   "author": "",
