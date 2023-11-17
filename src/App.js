@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 const app = express();
-const port = 3000;
+const port = 8080;
 
 const http = require('http');
 const server = http.createServer(app); // Use http.createServer to create a server
@@ -57,6 +57,6 @@ app.use(authRoutes, testRoutes, adminRoutes);
 // *** Start server ***
 // ********************
 
-server.listen(3000, () => {
+server.listen(8080, () => {
     console.log(`Server running at http://0.0.0.0:${port}/`);
 });
