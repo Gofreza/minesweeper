@@ -4,13 +4,13 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
+require('dotenv').config();
+
 const app = express();
-const port = 8080;
+let port = process.env.PORT || 8080;
 
 const http = require('http');
 const server = http.createServer(app); // Use http.createServer to create a server
-
-require('dotenv').config();
 
 // *************************
 // *** Middleware config ***
@@ -58,5 +58,5 @@ app.use(authRoutes, testRoutes, adminRoutes);
 // ********************
 
 server.listen(port, () => {
-    console.log(`Server running at http://0.0.0.0:${port}/`);
+    console.log(`Server running at http://127.0.0.1:${port}/`);
 });

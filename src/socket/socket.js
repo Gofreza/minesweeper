@@ -141,7 +141,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 }
             }
 
-            console.log(rooms)
+            //console.log(rooms)
             logger.log(`${socket.handshake.session.id} : ${username} quit room ${roomName}`)
         } );
 
@@ -166,8 +166,8 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             socket.emit('roomList', roomData);
         });
 
-        socket.on('disconnect', () => {
-            //console.log(`User disconnected: ${socket.id}`);
+        socket.on('disconnect', async (data) => {
+            //console.log(`User disconnected: ${socket.id} reason: ${data}`);
             logger.log('User disconnected: ' + socket.handshake.session.id + (socket.handshake.session.username ? ' (' + socket.handshake.session.username + ')' : ''));
             connectedSockets = connectedSockets.filter(s => s !== socket);
         });
@@ -244,6 +244,36 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         });
 
         // Other
+
+        app.post('/api/disconnect', async (req, res) => {
+            const roomName = req.body.roomName;
+            const username = req.body.username;
+            console.log("Deconnection request from", username, "in room", roomName);
+            if (rooms[roomName]) {
+                rooms[roomName].usersReady ? rooms[roomName].usersReady -= 1 : rooms[roomName].usersReady = 0;
+            }
+            if (rooms[roomName]) {
+                socket.leave(roomName);
+                socket.handshake.session.room = undefined;
+                rooms[roomName].users = rooms[roomName].users.filter((user) => {
+                    return user !== username;
+                });
+                rooms[roomName].slot -= 1;
+                if (rooms[roomName].slot === 0) {
+                    delete rooms[roomName];
+                    await roomFunctions.deleteRoomData(db, roomName);
+                } else {
+                    io.to(roomName).emit('roomData', {
+                        roomName: roomName,
+                        users: rooms[roomName].users
+                    });
+                    if (rooms[roomName].usersReady > 0) {
+                        io.to(roomName).emit('notReadyReceive');
+                    }
+                }
+            }
+            res.json({success: true});
+        })
 
         app.post('/emit-test-event/:roomName', (req, res) => {
             const { roomName } = req.params;
