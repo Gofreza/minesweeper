@@ -70,11 +70,12 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 socket.handshake.session.room = roomName;
                 socket.handshake.session.username = username;
 
-                rooms[roomName] = {users: [username], slot: 1, started: false};
+                rooms[roomName] = {users: [username], slot: 1, started: false, usersReady: 0};
                 io.to(roomName).emit('roomData', {
                     roomName: roomName,
                     users: rooms[roomName].users,
                     username: username,
+                    usersReady: rooms[roomName].usersReady,
                 });
 
                 console.log(rooms)
@@ -94,17 +95,22 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 username = username.substring(0, maxCharacterLimit); // Trim the message
             }
 
+            let dataReturn;
             if (rooms[roomName] /*&& rooms[roomName].slot < 2*/ && !rooms[roomName].started) {
                 socket.join(roomName);
                 socket.handshake.session.room = roomName;
                 socket.handshake.session.username = username;
                 rooms[roomName].users.push(username);
-                rooms[roomName].slot+=1;
-                io.to(roomName).emit('roomData', {
+                rooms[roomName].slot += 1;
+                console.log("Join:", rooms[roomName].usersReady)
+                dataReturn = {
                     roomName: roomName,
                     users: rooms[roomName].users,
                     username: username,
-                });
+                    usersReady: rooms[roomName].usersReady,
+                }
+                console.log("Server data:", dataReturn)
+                io.to(roomName).emit('roomData', dataReturn);
                 logger.log(`${socket.handshake.session.id} : ${username} joined room ${roomName}`)
             }
         });
@@ -113,6 +119,9 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             const roomName = data.roomName;
             const username = data.username;
             const usersReady = data.userReady;
+            if (rooms[roomName]) {
+                rooms[roomName].usersReady ? rooms[roomName].usersReady -= 1 : rooms[roomName].usersReady = 0;
+            }
             if (rooms[roomName]) {
                 socket.leave(roomName);
                 socket.handshake.session.room = undefined;
@@ -126,9 +135,9 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 } else {
                     io.to(roomName).emit('roomData', {
                         roomName: roomName,
-                        users: rooms[roomName].users,
-                        usersReady: usersReady,
+                        users: rooms[roomName].users
                     });
+                    io.to(roomName).emit('notReadyReceive');
                 }
             }
 
@@ -146,6 +155,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 roomName: roomName,
                 users: rooms[roomName].users,
                 username: socket.handshake.session.username,
+                usersReady: rooms[roomName].usersReady,
             });
         }
 
@@ -175,7 +185,6 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             const bombCoordinates = generateBombCoordinates(rows, cols, numBombs);
 
             rooms[roomName].started = true;
-            console.log("startVersusGame server side in room " + roomName + " with " + numBombs + " bombs !")
 
             io.to(roomName).emit('receiveVersusGame', {
                 numBombs: numBombs,
@@ -210,11 +219,15 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
 
         socket.on('ready' , (data) => {
             //console.log('ready', data.username)
+            rooms[data.roomName].usersReady++;
+            console.log("Ready:",rooms[data.roomName].usersReady)
             io.to(data.roomName).emit('readyReceive' , data);
         })
 
         socket.on('notReady' , (data) => {
             //console.log('notReady', data.username)
+            rooms[data.roomName].usersReady--;
+            console.log("Not ready:",rooms[data.roomName].usersReady)
             io.to(data.roomName).emit('notReadyReceive' , data);
         })
 

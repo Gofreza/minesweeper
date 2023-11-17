@@ -80,9 +80,9 @@ block layout-content
             //console.log('Room data:', data);
             roomName = data.roomName;
             users = data.users;
-            if (userReady) {
+            if (data.usersReady){
                 userReady = data.usersReady;
-                updateReadyCount(userReady);
+                updateReadyCount(data.usersReady)
             }
             // First to join is host (first in the list)
             if (username === users[0]){
@@ -117,21 +117,13 @@ block layout-content
         }
 
         socket.on('notReadyReceive', (data) => {
-                //console.log('notReadyRecive', data);
-                updateReadyCount(--userReady)
-                if (username !== users[0]) {
-                    readyButton.style.display = "block";
-                    notReadyButton.style.display = "none";
-                }
+            console.log('notReadyRecive', data);
+            updateReadyCount(--userReady)
         });
 
         socket.on('readyReceive', (data) => {
-                //console.log('readyRecive', data);
-                updateReadyCount(++userReady)
-                if (username !== users[0]) {
-                    readyButton.style.display = "none";
-                    notReadyButton.style.display = "block";
-                }
+            console.log('readyRecive', data);
+            updateReadyCount(++userReady)
         });
 
         function startGame() {

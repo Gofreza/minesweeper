@@ -169,20 +169,6 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         canvas.addEventListener('contextmenu', contextMenuHandler);
     }
 
-    function isGameWon() {
-        if (isGameWin) {
-            const myDiv = document.getElementById('gameWin');
-            myDiv.style.display = 'flex';
-        } else {
-            const myDiv = document.getElementById('gameOver');
-            myDiv.style.display = 'flex';
-        }
-    }
-
-    function win() {
-
-    }
-
     function lose() {
         stopTimer()
         gameEnded = true;
