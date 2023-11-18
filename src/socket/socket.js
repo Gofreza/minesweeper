@@ -151,12 +151,15 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
 
             socket.join(roomName);
 
-            io.to(roomName).emit('roomData', {
-                roomName: roomName,
-                users: rooms[roomName].users,
-                username: socket.handshake.session.username,
-                usersReady: rooms[roomName].usersReady,
-            });
+            if (rooms[roomName]) {
+                io.to(roomName).emit('roomData', {
+                    roomName: roomName,
+                    users: rooms[roomName].users,
+                    username: socket.handshake.session.username,
+                    usersReady: rooms[roomName].usersReady,
+                });
+            }
+
         }
 
         socket.on('getRooms', () => {
@@ -248,10 +251,6 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         app.post('/api/disconnect', async (req, res) => {
             const roomName = req.body.roomName;
             const username = req.body.username;
-            console.log("Deconnection request from", username, "in room", roomName);
-            if (rooms[roomName]) {
-                rooms[roomName].usersReady ? rooms[roomName].usersReady -= 1 : rooms[roomName].usersReady = 0;
-            }
             if (rooms[roomName]) {
                 socket.leave(roomName);
                 socket.handshake.session.room = undefined;
@@ -267,12 +266,17 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                         roomName: roomName,
                         users: rooms[roomName].users
                     });
+                    console.log("User disconnected from room", roomName, "userReady:", rooms[roomName].usersReady ? rooms[roomName].usersReady : 0);
                     if (rooms[roomName].usersReady > 0) {
                         io.to(roomName).emit('notReadyReceive');
                     }
+                    if (rooms[roomName]) {
+                        rooms[roomName].usersReady ? rooms[roomName].usersReady -= 1 : rooms[roomName].usersReady = 0;
+                    }
+                    socket.handshake.session.room = undefined;
                 }
             }
-            res.json({success: true});
+            res.redirect('/');
         })
 
         app.post('/emit-test-event/:roomName', (req, res) => {
