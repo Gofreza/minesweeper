@@ -10,3 +10,7 @@ And if you want to have a look at the code good luck, it's a mess. <br>
 Just go to this link :
 https://multisweeper.cleverapps.io/ <br>
 Hopefully it will be up and running.
+
+## Bugs
+
+ - You should not quit a room without clicking on the quit button, if you close your tab or the navigator, and choose to stay the room will still be active and bugged.
