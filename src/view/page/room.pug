@@ -76,21 +76,6 @@ block layout-content
             isScriptAppended = true; // Mark the script as appended
         }
 
-        window.addEventListener('beforeunload', function (e) {
-            e.preventDefault();
-            fetch('/api/disconnect', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({roomName, username})
-            }).then((response) => {
-                console.log(response);
-            }).catch((error) => {
-                console.log(error);
-            });
-        });
-
         socket.on('roomData', (data) => {
             //console.log('Room data:', data);
             roomName = data.roomName;

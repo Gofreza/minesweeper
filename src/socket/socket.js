@@ -118,18 +118,24 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         socket.on('quitRoom', async (data) => {
             const roomName = data.roomName;
             const username = data.username;
-            const usersReady = data.userReady;
-            if (rooms[roomName]) {
-                rooms[roomName].usersReady ? rooms[roomName].usersReady -= 1 : rooms[roomName].usersReady = 0;
-            }
+            let usersReady = 0;
+
             if (rooms[roomName]) {
                 socket.leave(roomName);
                 socket.handshake.session.room = undefined;
+
+                usersReady = rooms[roomName].usersReady;
+
+                rooms[roomName].usersReady !== 0 ? rooms[roomName].usersReady -= 1 : rooms[roomName].usersReady = 0;
+
                 rooms[roomName].users = rooms[roomName].users.filter((user) => {
                     return user !== username;
                 });
+
                 rooms[roomName].slot -= 1;
+
                 if (rooms[roomName].slot === 0) {
+                    logger.log(`Room deleted : ${roomName}`);
                     delete rooms[roomName];
                     await roomFunctions.deleteRoomData(db, roomName);
                 } else {
@@ -137,13 +143,17 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                         roomName: roomName,
                         users: rooms[roomName].users
                     });
-                    io.to(roomName).emit('notReadyReceive');
+                    // Send 'notReadyReceive' event after updating usersReady
+                    if (usersReady > 0) {
+                        io.to(roomName).emit('notReadyReceive');
+                    }
                 }
             }
 
             //console.log(rooms)
-            logger.log(`${socket.handshake.session.id} : ${username} quit room ${roomName}`)
-        } );
+            logger.log(`${socket.handshake.session.id} : ${username} quit room ${roomName}`);
+        });
+
 
         // Auto reconnect
         if (socket.handshake.session.room) {
@@ -222,14 +232,14 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
 
         socket.on('ready' , (data) => {
             //console.log('ready', data.username)
-            rooms[data.roomName].usersReady++;
+            rooms[data.roomName].usersReady += 1
             console.log("Ready:",rooms[data.roomName].usersReady)
             io.to(data.roomName).emit('readyReceive' , data);
         })
 
         socket.on('notReady' , (data) => {
             //console.log('notReady', data.username)
-            rooms[data.roomName].usersReady--;
+            rooms[data.roomName].usersReady -= 1;
             console.log("Not ready:",rooms[data.roomName].usersReady)
             io.to(data.roomName).emit('notReadyReceive' , data);
         })
