@@ -13,4 +13,4 @@ Hopefully it will be up and running.
 
 ## Bugs
 
- - You should not quit a room without clicking on the quit button, if you close your tab or the navigator, and choose to stay the room will still be active and bugged.
+ - You should not quit a room without clicking on the quit button, if so the room might be bugged. Need to implement an auto timeout for inactive room.
