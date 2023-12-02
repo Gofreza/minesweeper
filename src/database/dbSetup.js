@@ -35,7 +35,7 @@ function setupDatabase() {
         db.run(`CREATE TABLE IF NOT EXISTS admin (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
-            password INTEGER NOT NULL
+            password TEXT NOT NULL
         )`, function (err) {
             if (err) {
                 console.error("Error creating tables:", err.message);
