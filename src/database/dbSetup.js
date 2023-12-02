@@ -45,6 +45,28 @@ function setupDatabase() {
                 resolve(db);
             }
         });
+
+        // Check if the admin already exists
+        db.get(`SELECT * FROM admin WHERE username = ?`, ['admin'], (selectErr, row) => {
+            if (selectErr) {
+                console.error("Error checking if admin exists:", selectErr.message);
+            } else {
+                // If the admin does not exist, insert it
+                if (!row) {
+                    db.run(`INSERT INTO admin (username, password) VALUES (?, ?)`, ['admin', 'admin'], (insertErr) => {
+                        if (insertErr) {
+                            console.error("Error inserting default admin:", insertErr.message);
+                        } else {
+                            console.log("Default admin inserted");
+                        }
+                    });
+                } else {
+                    // Admin already exists, no need to insert
+                    console.log("Default admin already exists");
+                }
+            }
+        });
+
     });
 }
 
