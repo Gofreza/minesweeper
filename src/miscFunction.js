@@ -15,9 +15,10 @@ function verifyTokenAdmin(req, res, next) {
 
 const fs = require('fs');
 const readline = require('readline');
+const {join} = require("path");
 
 async function getConnectedUsers() {
-    const logFilePath = './logger/app.log';
+    const logFilePath = join(__dirname, '/logger/app.log');
     const connectedUsers = new Map();
 
     const fileStream = fs.createReadStream(logFilePath);
