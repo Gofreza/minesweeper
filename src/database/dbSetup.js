@@ -1,5 +1,3 @@
-// dbSetup.js
-
 const sqlite3 = require('sqlite3').verbose();
 
 let dbInstance = null;
@@ -32,6 +30,7 @@ function setupDatabase() {
             PRIMARY KEY (roomName, username)
         )`);
 
+        // Create the admin table
         db.run(`CREATE TABLE IF NOT EXISTS admin (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
@@ -42,31 +41,33 @@ function setupDatabase() {
                 reject(err);
             } else {
                 dbInstance = db;
-                resolve(db);
-            }
-        });
 
-        // Check if the admin already exists
-        db.get(`SELECT * FROM admin WHERE username = ?`, ['admin'], (selectErr, row) => {
-            if (selectErr) {
-                console.error("Error checking if admin exists:", selectErr.message);
-            } else {
-                // If the admin does not exist, insert it
-                if (!row) {
-                    db.run(`INSERT INTO admin (username, password) VALUES (?, ?)`, ['admin', 'admin'], (insertErr) => {
-                        if (insertErr) {
-                            console.error("Error inserting default admin:", insertErr.message);
+                // Check if the admin already exists
+                db.get(`SELECT * FROM admin WHERE username = ?`, ['admin'], (selectErr, row) => {
+                    if (selectErr) {
+                        console.error("Error checking if admin exists:", selectErr.message);
+                        reject(selectErr);
+                    } else {
+                        // If the admin does not exist, insert it
+                        if (!row) {
+                            db.run(`INSERT INTO admin (username, password) VALUES (?, ?)`, ['admin', 'admin'], (insertErr) => {
+                                if (insertErr) {
+                                    console.error("Error inserting default admin:", insertErr.message);
+                                    reject(insertErr);
+                                } else {
+                                    console.log("Default admin inserted");
+                                    resolve(db);
+                                }
+                            });
                         } else {
-                            console.log("Default admin inserted");
+                            // Admin already exists, no need to insert
+                            console.log("Default admin already exists");
+                            resolve(db);
                         }
-                    });
-                } else {
-                    // Admin already exists, no need to insert
-                    console.log("Default admin already exists");
-                }
+                    }
+                });
             }
         });
-
     });
 }
 
