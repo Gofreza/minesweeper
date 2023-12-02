@@ -21,6 +21,22 @@ function setupDatabase() {
     PRIMARY KEY (roomName, username)
     )`);
 
+    db.run(`CREATE TABLE IF NOT EXISTS admin (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        password TEXT NOT NULL
+    )`);
+
+    /*
+        Fill Database with default admin
+     */
+
+    db.run(`INSERT INTO admin (username, password) VALUES (?, ?)`, ['admin', 'admin'], (err) => {
+        if (err) {
+            console.error("Error insert default admin:", err.message);
+        }
+    });
+
     /*
         roomData FUNCTIONS
      */
