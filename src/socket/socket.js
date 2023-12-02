@@ -2,19 +2,14 @@
 const { Server } = require("socket.io");
 const sharedSession = require('express-socket.io-session');
 // Database
-const setupDatabase = require('../database/dbSetup');
+const {getDatabase} = require('../database/dbSetup');
 const roomFunctions = require('../database/dbRoom');
 const userFunctions = require('../database/dbUsers');
 let db;
-setupDatabase()
-    .then((database) => {
-        db = database;
-        console.log("Database created socket.js");
-        roomFunctions.deleteAllRoomData(db)
-            .then(() => {
-                console.log("All room data deleted");
-            });
-    });
+getDatabase().then((database) => {
+    db = database;
+    console.log("Database link socket.js");
+})
 
 // Logger
 const Logger = require('../logger/logger');

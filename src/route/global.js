@@ -4,16 +4,14 @@ const router = express.Router();
 const Logger = require('../logger/logger');
 const logger = new Logger();
 
-const setupDatabase = require('../database/dbSetup');
+const {setupDatabase, getDatabase} = require('../database/dbSetup');
 const roomFunctions = require('../database/dbRoom');
 const {verifyTokenAdmin} = require("../miscFunction");
 let db;
-setupDatabase()
-    .then((database) => {
-        db = database;
-        console.log("Database created global.js");
-    });
-
+getDatabase().then((database) => {
+    db = database;
+    console.log("Database link global.js");
+})
 router.get('/', (req, res) => {
     const sessionId = req.sessionID;
     //console.log('Express Session ID:', sessionId);

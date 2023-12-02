@@ -3,15 +3,13 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 
-const setupDatabase = require('../database/dbSetup');
+const {setupDatabase, getDatabase} = require('../database/dbSetup');
 const authFunctions = require('../database/dbAuth');
 let db;
-setupDatabase()
-    .then((database) => {
-        db = database;
-        console.log("Database created auth.js");
-    });
-
+getDatabase().then((database) => {
+    db = database;
+    console.log("Database link auth.js");
+})
 router.get('/login', (req, res) => {
     res.render('../view/page/login.pug', {
         title: 'Login',

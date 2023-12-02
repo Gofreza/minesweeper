@@ -37,22 +37,48 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 app.use(cookieParser());
 
-// *********************
-// *** Socket config ***
-// *********************
+// ***********************
+// *** Database Set Up ***
+// ***********************
 
-const configureSocket = require('./socket/socket');
-configureSocket(server, sessionMiddleware, app);
+const {setupDatabase} = require("./database/dbSetup");
+const roomFunctions = require("./database/dbRoom");
+const fillDatabase = require("./database/dbFill");
+let db;
+setupDatabase()
+    .then((database) => {
+        db = database;
+        console.log("Database created App.js");
+        return roomFunctions.deleteAllRoomData(db);
+    })
+    .then(() => {
+        console.log("All room data deleted");
+        console.log(db);
+        return fillDatabase(db);
+    })
+    .then(() => {
+        console.log("Database filled");
 
-// ********************
-// *** Route config ***
-// ********************
+        // ********************
+        // *** Route config ***
+        // ********************
 
-//const authRoutes = require('./route/auth');
-const adminRoutes = require('./route/admin');
-const testRoutes = require('./route/global');
-const authRoutes = require('./route/auth');
-app.use(testRoutes, adminRoutes, authRoutes);
+        //const authRoutes = require('./route/auth');
+        const adminRoutes = require('./route/admin');
+        const testRoutes = require('./route/global');
+        const authRoutes = require('./route/auth');
+        app.use(testRoutes, adminRoutes, authRoutes);
+
+        // *********************
+        // *** Socket config ***
+        // *********************
+
+        const configureSocket = require('./socket/socket');
+        configureSocket(server, sessionMiddleware, app);
+    })
+    .catch(error => {
+        console.error("Error:", error.message);
+    });
 
 // ********************
 // *** Start server ***

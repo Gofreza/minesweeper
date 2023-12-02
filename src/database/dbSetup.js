@@ -13,57 +13,38 @@ function setupDatabase() {
     }
 
     return new Promise((resolve, reject) => {
-        const db = new sqlite3.Database('./src/database/database.db');
-        //console.log("Database created");
-
-        // Create the user table if it doesn't exist
-        db.run(`CREATE TABLE IF NOT EXISTS roomData (
-            roomName TEXT NOT NULL PRIMARY KEY,
-            numRows INTEGER NOT NULL,
-            numCols INTEGER NOT NULL
-        )`);
-
-        db.run(`CREATE TABLE IF NOT EXISTS users (
-            roomName TEXT NOT NULL,
-            username TEXT NOT NULL,
-            score INTEGER NOT NULL,
-            PRIMARY KEY (roomName, username)
-        )`);
-
-        // Create the admin table
-        db.run(`CREATE TABLE IF NOT EXISTS admin (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            password TEXT NOT NULL
-        )`, function (err) {
+        const db = new sqlite3.Database('./src/database/database.db', (err) => {
             if (err) {
-                console.error("Error creating tables:", err.message);
+                console.error("Error opening the database:", err.message);
                 reject(err);
             } else {
-                dbInstance = db;
+                // Create the user table if it doesn't exist
+                db.run(`CREATE TABLE IF NOT EXISTS roomData (
+                    roomName TEXT NOT NULL PRIMARY KEY,
+                    numRows INTEGER NOT NULL,
+                    numCols INTEGER NOT NULL
+                )`);
 
-                // Check if the admin already exists
-                db.get(`SELECT * FROM admin WHERE username = ?`, ['admin'], (selectErr, row) => {
-                    if (selectErr) {
-                        console.error("Error checking if admin exists:", selectErr.message);
-                        reject(selectErr);
+                db.run(`CREATE TABLE IF NOT EXISTS users (
+                    roomName TEXT NOT NULL,
+                    username TEXT NOT NULL,
+                    score INTEGER NOT NULL,
+                    PRIMARY KEY (roomName, username)
+                )`);
+
+                // Create the admin table
+                db.run(`CREATE TABLE IF NOT EXISTS admin (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    password TEXT NOT NULL
+                )`, (createErr) => {
+                    if (createErr) {
+                        console.error("Error creating tables:", createErr.message);
+                        db.close();
+                        reject(createErr);
                     } else {
-                        // If the admin does not exist, insert it
-                        if (!row) {
-                            db.run(`INSERT INTO admin (username, password) VALUES (?, ?)`, ['admin', 'admin'], (insertErr) => {
-                                if (insertErr) {
-                                    console.error("Error inserting default admin:", insertErr.message);
-                                    reject(insertErr);
-                                } else {
-                                    console.log("Default admin inserted");
-                                    resolve(db);
-                                }
-                            });
-                        } else {
-                            // Admin already exists, no need to insert
-                            console.log("Default admin already exists");
-                            resolve(db);
-                        }
+                        dbInstance = db;
+                        resolve(db);
                     }
                 });
             }
@@ -71,4 +52,15 @@ function setupDatabase() {
     });
 }
 
-module.exports = setupDatabase;
+/**
+ * Get the database instance
+ * @returns {Promise<Database|null>} A promise that resolves with the database instance or null if not set up yet
+ */
+function getDatabase() {
+    return Promise.resolve(dbInstance);
+}
+
+module.exports = {
+    setupDatabase,
+    getDatabase,
+};
