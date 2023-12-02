@@ -25,11 +25,17 @@ function setupDatabase() {
                     numCols INTEGER NOT NULL
                 )`);
 
-                db.run(`CREATE TABLE IF NOT EXISTS users (
+                db.run(`CREATE TABLE IF NOT EXISTS rooms (
                     roomName TEXT NOT NULL,
                     username TEXT NOT NULL,
                     score INTEGER NOT NULL,
                     PRIMARY KEY (roomName, username)
+                )`);
+
+                db.run(`CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    password TEXT NOT NULL
                 )`);
 
                 // Create the admin table

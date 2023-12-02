@@ -3,8 +3,8 @@ const { Server } = require("socket.io");
 const sharedSession = require('express-socket.io-session');
 // Database
 const {getDatabase} = require('../database/dbSetup');
-const roomFunctions = require('../database/dbRoom');
-const userFunctions = require('../database/dbUsers');
+const roomFunctions = require('../database/dbRoomData');
+const userFunctions = require('../database/dbRooms');
 let db;
 getDatabase().then((database) => {
     db = database;

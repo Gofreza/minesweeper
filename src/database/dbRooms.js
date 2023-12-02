@@ -12,8 +12,8 @@ async function addUserScore(db, roomName, username, score) {
 
     // SQL query to insert or replace user score in the 'users' table
     const sql = `
-        INSERT OR REPLACE INTO users (roomName, username, score) 
-        VALUES (?, ?, COALESCE((SELECT score FROM users WHERE roomName = ? AND username = ?), 0) + ?)
+        INSERT OR REPLACE INTO rooms (roomName, username, score) 
+        VALUES (?, ?, COALESCE((SELECT score FROM rooms WHERE roomName = ? AND username = ?), 0) + ?)
     `;
 
     // Return a Promise for asynchronous handling
@@ -44,7 +44,7 @@ async function addUserScore(db, roomName, username, score) {
  */
 async function deleteUserScore(db, roomName, username) {
     // SQL query to delete user score from the 'users' table
-    const sql = `DELETE FROM users WHERE roomName = ? AND username = ?`;
+    const sql = `DELETE FROM rooms WHERE roomName = ? AND username = ?`;
 
     // Return a Promise for asynchronous handling
     return new Promise((resolve) => {
@@ -68,7 +68,7 @@ async function deleteUserScore(db, roomName, username) {
  */
 async function deleteAllUserScores(db, roomName) {
     // SQL query to delete user score from the 'users' table
-    const sql = `DELETE FROM users WHERE roomName = ?`;
+    const sql = `DELETE FROM rooms WHERE roomName = ?`;
 
     // Return a Promise for asynchronous handling
     return new Promise((resolve) => {
@@ -94,7 +94,7 @@ async function deleteAllUserScores(db, roomName) {
  */
 async function getResultsFromRoomName(db, roomName) {
     // SQL query to select all columns from the 'users' table for the specified room
-    const sql = `SELECT * FROM users WHERE roomName = ?`;
+    const sql = `SELECT * FROM rooms WHERE roomName = ?`;
 
     // Return a Promise for asynchronous handling
     return new Promise((resolve, reject) => {
@@ -124,7 +124,7 @@ async function getResultsFromRoomName(db, roomName) {
  */
 async function checkResults(db, roomName, playerNumber) {
     // SQL query to count the number of user entries in the 'users' table for the specified room
-    const sql = `SELECT COUNT(*) FROM users WHERE roomName = ?`;
+    const sql = `SELECT COUNT(*) FROM rooms WHERE roomName = ?`;
 
     // Return a Promise for asynchronous handling
     return new Promise((resolve, reject) => {
@@ -153,7 +153,7 @@ async function checkResults(db, roomName, playerNumber) {
  */
 async function getHighestScoreFromRoomName(db, roomName) {
     // SQL query to select the username and score from the 'users' table for the specified room, ordered by score in ascending order, and limiting to 1 result
-    const sql = `SELECT username, score FROM users WHERE roomName = ? ORDER BY score ASC LIMIT 1`;
+    const sql = `SELECT username, score FROM rooms WHERE roomName = ? ORDER BY score ASC LIMIT 1`;
 
     // Return a Promise for asynchronous handling
     return new Promise((resolve, reject) => {

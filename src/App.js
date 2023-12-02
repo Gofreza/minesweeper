@@ -42,7 +42,7 @@ app.use(cookieParser());
 // ***********************
 
 const {setupDatabase} = require("./database/dbSetup");
-const roomFunctions = require("./database/dbRoom");
+const roomFunctions = require("./database/dbRoomData");
 const fillDatabase = require("./database/dbFill");
 let db;
 setupDatabase()

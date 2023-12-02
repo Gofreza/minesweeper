@@ -5,7 +5,7 @@ const Logger = require('../logger/logger');
 const logger = new Logger();
 
 const {setupDatabase, getDatabase} = require('../database/dbSetup');
-const roomFunctions = require('../database/dbRoom');
+const roomFunctions = require('../database/dbRoomData');
 const {verifyTokenAdmin} = require("../miscFunction");
 let db;
 getDatabase().then((database) => {
