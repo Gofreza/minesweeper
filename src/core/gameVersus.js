@@ -1,4 +1,4 @@
-import Grid from "./grid"
+import Grid, {drawGrid} from "./grid"
 function drawBomb(ctx, x, y, radius, offset) {
     // Draw a black circle for bombs
     ctx.fillStyle = "black"; // Set the fill color to red
@@ -73,7 +73,6 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
     let timerInterval = null;
     let timeElapsed = 0;
     let isGameStarted = false;
-    const malus = [];
 
     //Bombs
     const bombCanvas = document.getElementById('bombsCanvas');
@@ -109,10 +108,6 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         // Dispatch the 'endGame' event with the result as the detail
         //console.log(`Game ended with result: ${result}`);
         document.dispatchEvent(new CustomEvent('endVersusGame', { detail: { result } }));
-    }
-
-    function addMalus(value) {
-        malus.push(value);
     }
 
     function checkIfClickedCellIsBomb(row, col) {
@@ -169,31 +164,6 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         canvas.addEventListener('contextmenu', contextMenuHandler);
     }
 
-    function lose() {
-        stopTimer()
-        gameEnded = true;
-        removeClickListeners();
-
-        //isGameWon();
-
-        // Revealing all bomb cells
-        for (let r = 0; r < numRows; r++) {
-            for (let c = 0; c < numCols; c++) {
-                if (grid.matrix[r][c].hasBomb()) {
-                    grid.matrix[r][c].setVisible();
-                }
-            }
-        }
-        // Clear the canvas and redraw the grid
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let r = 0; r < numRows; r++) {
-            for (let c = 0; c < numCols; c++) {
-                grid.matrix[r][c].drawCellContent(ctx, r, c, cellSize);
-                ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
-            }
-        }
-    }
-
     function explodeBomb(row, col) {
         addMalus(5);
         timeElapsed += 5;
@@ -238,12 +208,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
 
         // Clear the canvas and redraw the grid
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-            }
-        }
+        drawGrid(grid, ctx, numRows, numCols, cellSize);
 
         if (checkIfClickedCellIsBomb(row, col)) {
             //lose();
@@ -276,12 +241,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
 
         // Clear the canvas and redraw the grid
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-            }
-        }
+        drawGrid(grid, ctx, numRows, numCols, cellSize);
 
         // Update the bombs counter
         if (!grid.matrix[row][col].isVisible() && grid.matrix[row][col].isFlagged() && !grid.matrix[row][col].getExploded() ) {
@@ -321,11 +281,6 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
     bombsDiv.innerHTML = grid.numbombs.toString();
 
     // Draw the rest of the grid
-    for (let row = 0; row < numRows; row++) {
-        for (let col = 0; col < numCols; col++) {
-            grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-            ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-        }
-    }
+    drawGrid(grid, ctx, numRows, numCols, cellSize);
 
 });

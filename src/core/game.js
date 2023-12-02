@@ -1,4 +1,4 @@
-import Grid from "./grid"
+import Grid, {drawGrid} from "./grid"
 
 const BOMB_DENSITY_NORMAL = 0.15;
 
@@ -160,12 +160,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         ctx.scale(zoomFactor, zoomFactor);
 
         // Redraw your Minesweeper grid with the updated size
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-            }
-        }
+        drawGrid(grid, ctx, numRows, numCols, cellSize)
     }
 
     document.getElementById('zoomInButton').addEventListener('click', function () {
@@ -286,12 +281,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
         // Clear the canvas and redraw the grid
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let r = 0; r < numRows; r++) {
-            for (let c = 0; c < numCols; c++) {
-                grid.matrix[r][c].drawCellContent(ctx, r, c, cellSize);
-                ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
-            }
-        }
+        drawGrid(grid, ctx, numRows, numCols, cellSize)
     }
 
     // Touch start for long press (right-click)
@@ -309,12 +299,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             // Clear the canvas and redraw the grid
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let row = 0; row < numRows; row++) {
-                for (let col = 0; col < numCols; col++) {
-                    grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-                    ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-                }
-            }
+            drawGrid(grid, ctx, numRows, numCols, cellSize)
 
             // Update the bombs counter
             if (!grid.matrix[row][col].isVisible() && grid.matrix[row][col].isFlagged() ) {
@@ -371,12 +356,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Clear the canvas and redraw the grid
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-            }
-        }
+        drawGrid(grid, ctx, numRows, numCols, cellSize)
 
         if (checkIfClickedCellIsBomb(row, col)) {
             lose();
@@ -418,12 +398,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Clear the canvas and redraw the grid
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-            }
-        }
+        drawGrid(grid, ctx, numRows, numCols, cellSize)
 
         if (checkIfClickedCellIsBomb(row, col)) {
             lose();
@@ -449,12 +424,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Clear the canvas and redraw the grid
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-            }
-        }
+        drawGrid(grid, ctx, numRows, numCols, cellSize)
 
         // Update the bombs counter
         if (!grid.matrix[row][col].isVisible() && grid.matrix[row][col].isFlagged() ) {
@@ -515,12 +485,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     bombsDiv.innerHTML = grid.numbombs.toString();
 
     // Draw the rest of the grid
-    for (let row = 0; row < numRows; row++) {
-        for (let col = 0; col < numCols; col++) {
-            grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-            ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-        }
-    }
+    drawGrid(grid, ctx, numRows, numCols, cellSize);
 
 
 });

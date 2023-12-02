@@ -51,7 +51,8 @@ configureSocket(server, sessionMiddleware, app);
 //const authRoutes = require('./route/auth');
 const adminRoutes = require('./route/admin');
 const testRoutes = require('./route/global');
-app.use(testRoutes, adminRoutes);
+const authRoutes = require('./route/auth');
+app.use(testRoutes, adminRoutes, authRoutes);
 
 // ********************
 // *** Start server ***

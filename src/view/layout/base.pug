@@ -7,15 +7,15 @@ block menu
         .menu-container
             .menu
                 a(class="menu-item" href="/") Home
-                a(class="menu-item" href="/") Login
-                a(class="menu-item" href="/") Leader Board
-                .menu-item.dropdown-trigger
+                a(class="menu-item" href="/login") Login
+                a(class="menu-item" href="/") Quest
+                //.menu-item.dropdown-trigger
                     | Account
                     .dropdown-content
                         a(class="dropdown-item" href="/") Whaaaag
                 a(class="menu-item" href="https://github.com/Gofreza/minesweeper") GitHub
-                a(class="menu-item" href="/") Logout
-                a(class="menu-item icon") <!-- Add an icon here, for example: -->
+                //a(class="menu-item" href="/") Logout
+                a(class="menu-item icon")
                     | &#9776; <!-- Unicode hamburger icon -->
     script.
         document.addEventListener('DOMContentLoaded', function () {

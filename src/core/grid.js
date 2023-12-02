@@ -215,4 +215,17 @@ class Grid {
 
 }
 
-module.exports = Grid;
+function drawGrid(grid, ctx, numRows, numCols, cellSize) {
+    // Draw the rest of the grid
+    for (let row = 0; row < numRows; row++) {
+        for (let col = 0; col < numCols; col++) {
+            grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
+            ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+        }
+    }
+}
+
+module.exports = {
+    Grid,
+    drawGrid
+};
