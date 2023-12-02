@@ -23,21 +23,27 @@ router.post('/login', async (req, res) => {
 
     try {
         const hashedPassword = await authFunctions.getHash(db, username);
-        bcrypt.compare(password, hashedPassword, (bcryptError, bcryptResult) => {
-            if (bcryptError) {
-                console.error('Error occurred while comparing passwords:', bcryptError);
-                return res.status(500).send('Internal Server Error');
-            }
+        if (hashedPassword) {
+            bcrypt.compare(password, hashedPassword, (bcryptError, bcryptResult) => {
+                if (bcryptError) {
+                    console.error('Error occurred while comparing passwords:', bcryptError);
+                    return res.status(500).send('Internal Server Error');
+                }
 
-            if (!bcryptResult) {
-                // Incorrect password
-                // Redirect back to the previous page
-                return res.redirect('/');
-            }
+                if (!bcryptResult) {
+                    // Incorrect password
+                    // Redirect back to the previous page
+                    return res.redirect('/');
+                }
 
-            // Password is correct, proceed with admin check
-            checkAdmin();
-        });
+                // Password is correct, proceed with admin check
+                checkAdmin();
+            });
+        } else {
+            // No password found
+            // Redirect back to the previous page or handle as needed
+            return res.redirect('/');
+        }
 
         async function checkAdmin() {
             try {

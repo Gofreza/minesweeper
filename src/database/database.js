@@ -35,6 +35,7 @@ function setupDatabase() {
         if (err) {
             console.error("Error insert default admin:", err.message);
         }
+        console.log("Default admin inserted");
     });
 
     /*

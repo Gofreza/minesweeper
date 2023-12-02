@@ -7,11 +7,18 @@ async function getHash(db, username) {
                 console.error("Error getHash:", err.message);
                 reject(err);
             } else {
-                resolve(row.password);
+                // Check if row is undefined
+                if (row === undefined) {
+                    // No password found, resolve with a default value or handle the case
+                    resolve(null); // You can replace null with any default value
+                } else {
+                    resolve(row.password);
+                }
             }
         });
     });
 }
+
 
 /**
  * Checks if a user with the specified username and password exists in the 'admin' table.
