@@ -23,7 +23,7 @@ router.get('*', (req, res, next) => {
             next();
         } else {
             verify(token, process.env.SECRET_KEY_ADMIN, async (err, decoded) => {
-                console.log("decoded admin:", decoded);
+                //console.log("decoded admin:", decoded);
                 if (err instanceof TokenExpiredError) {
                     console.log("Token admin expired");
                     // Token has expired
@@ -41,7 +41,7 @@ router.get('*', (req, res, next) => {
                 }
             });
             verify(token, process.env.SECRET_KEY, async (err, decoded) => {
-                console.log("decoded user:", decoded);
+                //console.log("decoded user:", decoded);
                 if (err instanceof TokenExpiredError) {
                     // Token has expired
                     //console.error('Token has expired:', err.expiredAt);

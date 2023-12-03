@@ -11,10 +11,10 @@ block menu
                     form(action='/logout', method='POST')
                         input(type='submit', value='Logout')
                     a(class="menu-item" href="/profile") Profile
+                    a(class="menu-item" href="/") Quest
                 else
                     a(class="menu-item" href="/login") Login
                     a(class="menu-item" href="/register") Register
-                a(class="menu-item" href="/") Quest
                 if admin
                     .menu-item.dropdown-trigger
                         | Admin
