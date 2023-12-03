@@ -160,6 +160,8 @@ router.get('/logout', verifyToken, async (req, res) => {
         // Clear the 'token' cookie from the user's browser
         res.clearCookie('token');
 
+        req.session.username = null;
+
         // Redirect the user to the home page
         req.flash('success', 'Logged out successfully');
         res.redirect('/');
