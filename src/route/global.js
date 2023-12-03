@@ -23,7 +23,9 @@ router.get('*', (req, res, next) => {
             next();
         } else {
             verify(token, process.env.SECRET_KEY_ADMIN, async (err, decoded) => {
+                console.log("decoded admin:", decoded);
                 if (err instanceof TokenExpiredError) {
+                    console.log("Token admin expired");
                     // Token has expired
                     //console.error('Token has expired:', err.expiredAt);
                     await authFunctions.deleteConnectionPG(getClient(), token);
@@ -38,8 +40,15 @@ router.get('*', (req, res, next) => {
                     //console.log('Username from token:', username);
                 }
             });
-            verify(token, process.env.SECRET_KEY, (err, decoded) => {
-                if (err) {
+            verify(token, process.env.SECRET_KEY, async (err, decoded) => {
+                console.log("decoded user:", decoded);
+                if (err instanceof TokenExpiredError) {
+                    // Token has expired
+                    //console.error('Token has expired:', err.expiredAt);
+                    await authFunctions.deleteConnectionPG(getClient(), token);
+                    res.clearCookie('token');
+                    res.redirect('/logout');
+                } else if (err) {
                     // Token verification failed
                     //console.error('Token verification failed:', err);
                 } else {
@@ -67,6 +76,7 @@ router.get('/', async (req, res) => {
 
     res.render("../view/page/home.pug", {
         title: "Home",
+        flash: req.flash(),
         boardLength: 5,
         boardWidth: 5,
         showMenuBar: true,

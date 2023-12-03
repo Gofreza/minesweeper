@@ -150,6 +150,19 @@ async function insertUserPG(pgClient, username, password) {
     }
 }
 
+async function deleteUserPG(pgClient, username) {
+    try {
+        const query = {
+            name: 'delete-user-pg',
+            text: `DELETE FROM users WHERE username = $1`,
+            values: [username]
+        };
+        await pgClient.query(query)
+    } catch (error) {
+        console.error("Error deleteUserPG:", error.message);
+    }
+}
+
 /**
  * Inserts a connection with the specified token and username into the 'connection' table.
  * @param {Object} pgClient - The database object.
@@ -227,6 +240,6 @@ module.exports = {
     // SQLite
     isAdmin, getHash,
     // PostgresSQL
-    isAdminPG, getHashUserPG, usernameExistsPG, insertUserPG,
+    isAdminPG, getHashUserPG, usernameExistsPG, insertUserPG, deleteUserPG,
     addConnectionPG, deleteConnectionPG, isConnectedPG, changePasswordPG,
 }

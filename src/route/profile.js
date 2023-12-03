@@ -2,7 +2,7 @@ const express = require('express');
 const {verifyToken} = require("../miscFunction");
 const {getClient} = require("../database/dbSetup");
 const bcrypt = require("bcrypt");
-const {changePasswordPG, getHashUserPG} = require("../database/dbAuth");
+const {changePasswordPG, getHashUserPG, deleteUserPG, deleteConnectionPG} = require("../database/dbAuth");
 const router = express.Router();
 
 router.post('/changePassword', verifyToken, async (req, res) => {
@@ -43,6 +43,15 @@ router.post('/changePassword', verifyToken, async (req, res) => {
     // Password changed successfully`
     req.flash('success', 'Password changed successfully')
     return res.status(200).redirect('/profile');
+})
+
+router.post('/deleteAccount', verifyToken, async (req, res) => {
+    await deleteUserPG(getClient(), req.session.username);
+    await deleteConnectionPG(getClient(), req.cookies.token);
+    res.clearCookie('token');
+    req.session.username = null;
+    req.flash('success', 'Account deleted successfully')
+    res.redirect('/');
 })
 
 module.exports = router;

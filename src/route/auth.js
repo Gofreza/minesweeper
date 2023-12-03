@@ -11,12 +11,13 @@ getDatabase().then((database) => {
     db = database;
     console.log("Database link auth.js");
 })
-router.get('/login',isNotConnected, async (req, res) => {
+router.get('/login', isNotConnected, async (req, res) => {
     const token = req.cookies.token;
     const isConnected = await authFunctions.isConnectedPG(getClient(), token);
     const isAdmin = await isAdminFunction(req);
     res.render('../view/page/login.pug', {
         title: 'Login',
+        flash: req.flash(),
         showMenuBar: true,
         loggedIn: isConnected,
         admin: isAdmin,
@@ -29,6 +30,7 @@ router.get('/register', isNotConnected, async (req, res) => {
     const isAdmin = await isAdminFunction(req);
     res.render('../view/page/register.pug', {
         title: 'Register',
+        flash: req.flash(),
         showMenuBar: true,
         loggedIn: isConnected,
         admin: isAdmin,
@@ -52,6 +54,7 @@ router.post('/login', isNotConnected, async (req, res) => {
                 if (!bcryptResult) {
                     // Incorrect password
                     // Redirect back to the previous page
+                    req.flash('error', 'Incorrect password')
                     return res.redirect('/');
                 }
                 // Password is correct, proceed with admin check
@@ -65,6 +68,7 @@ router.post('/login', isNotConnected, async (req, res) => {
                     // Add username to the session
                     req.session.username = username;
 
+                    req.flash('success', 'Admin Logged in successfully')
                     return res.redirect('/adminDashboard');
                 } else {
                     const token = jwt.sign({username: username}, process.env.SECRET_KEY, {expiresIn: '1h'});
@@ -76,12 +80,14 @@ router.post('/login', isNotConnected, async (req, res) => {
                     // Add username to the session
                     req.session.username = username;
 
+                    req.flash('success', 'Logged in successfully')
                     return res.redirect('/')
                 }
             });
         } else {
             // No password found
             // Redirect back to the previous page or handle as needed
+            req.flash('error', 'User does not exist')
             return res.redirect('/');
         }
 
@@ -108,6 +114,7 @@ router.post('/register', isNotConnected, async (req, res) => {
 
     // Check if the passwords match
     if (password !== password2) {
+        req.flash('error', 'Passwords do not match')
         return res.redirect('/register');
     }
 
@@ -116,6 +123,7 @@ router.post('/register', isNotConnected, async (req, res) => {
         const pgClient = getClient()
         const usernameExists = await authFunctions.usernameExistsPG(pgClient, username);
         if (usernameExists) {
+            req.flash('error', 'Username already exists')
             return res.redirect('/register');
         }
 
@@ -126,6 +134,7 @@ router.post('/register', isNotConnected, async (req, res) => {
         await authFunctions.insertUserPG(pgClient, username, hashedPassword);
 
         // Redirect to login page
+        req.flash('success', 'Registered successfully')
         return res.redirect('/login');
 
     } catch (usernameError) {
@@ -134,22 +143,33 @@ router.post('/register', isNotConnected, async (req, res) => {
     }
 })
 
-router.post('/logout', verifyToken, (req, res) => {
-    req.session.destroy(async err => {
-        if (err) {
-            console.error('Error destroying session:', err);
-            // Handle the error appropriately
-            res.status(500).send('Internal Server Error');
-        } else {
-            const token = req.cookies.token;
-            await authFunctions.deleteConnectionPG(getClient(), token);
-            // Clear the 'token' cookie from the user's browser
-            res.clearCookie('token');
+router.post('/logout', verifyToken, async (req, res) => {
+    try {
+        const token = req.cookies.token;
 
-            // Redirect the user to the home page
-            res.redirect('/');
+        // Assuming that deleteConnectionPG returns a Promise, use try/catch
+        try {
+            await authFunctions.deleteConnectionPG(getClient(), token);
+        } catch (deleteConnectionError) {
+            console.error('Error deleting connection:', deleteConnectionError);
+            // Handle the error, perhaps by sending an error response or redirecting to an error page
+            req.flash('error', 'An error occurred during logout');
+            return res.redirect('/');
         }
-    });
+
+        // Clear the 'token' cookie from the user's browser
+        res.clearCookie('token');
+
+        // Redirect the user to the home page
+        req.flash('success', 'Logged out successfully');
+        res.redirect('/');
+    } catch (logoutError) {
+        console.error('Error during logout:', logoutError);
+        // Handle the error, perhaps by sending an error response or redirecting to an error page
+        req.flash('error', 'An unexpected error occurred during logout');
+        res.redirect('/');
+    }
 });
+
 
 module.exports = router;

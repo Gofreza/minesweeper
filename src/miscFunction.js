@@ -90,7 +90,7 @@ async function isConnected(req, res, next) {
 async function isNotConnected(req, res, next) {
     const token = req.cookies.token;
     const isConnected = await authFunctions.isConnectedPG(getClient(), token)
-    if (!token && !isConnected) {
+    if (!isConnected) {
         next();
     } else {
         res.redirect('/');

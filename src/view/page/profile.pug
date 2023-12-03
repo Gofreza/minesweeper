@@ -4,6 +4,7 @@ block layout-content
     h1 Profile
     h2 Username: #{username}
     button(id="changePasswordButton") Change Password
+    button(id="deleteAccountButton") Delete Account
 
     script.
         document.addEventListener('DOMContentLoaded', function () {
@@ -41,6 +42,37 @@ block layout-content
 
                 const closePasswordFormButton = document.getElementById('closePasswordFormButton');
                 closePasswordFormButton.addEventListener('click', function () {
+                    formContainer.remove(); // Remove the form container from the DOM
+                    formContainer = null; // Reset the variable
+                });
+            }
+
+            const deleteAccountButton = document.getElementById('deleteAccountButton');
+
+            deleteAccountButton.addEventListener('click', function () {
+                if (!formContainer) {
+                    injectDeleteAccountForm();
+                }
+                formContainer.style.display = 'block';
+            });
+
+            function injectDeleteAccountForm() {
+                formContainer = document.createElement('div');
+                formContainer.id = 'deleteAccountFormContainer';
+                formContainer.classList.add('form-container');
+                formContainer.style.display = 'none';
+
+                formContainer.innerHTML = `
+                    <form id="deleteAccountForm" action="/deleteAccount" method="POST">
+                        <button type="submit">Delete Account</button>
+                    </form>
+                    <button id="closeDeleteAccountFormButton" class="close-button" type="button">×</button>
+                `;
+
+                document.body.appendChild(formContainer);
+
+                const closeDeleteAccountFormButton = document.getElementById('closeDeleteAccountFormButton');
+                closeDeleteAccountFormButton.addEventListener('click', function () {
                     formContainer.remove(); // Remove the form container from the DOM
                     formContainer = null; // Reset the variable
                 });
