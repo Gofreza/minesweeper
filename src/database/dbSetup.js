@@ -34,6 +34,21 @@ function getClient(){
     return pgClient;
 }
 
+function createConnectionTable(){
+    const query = {
+        name: "create-connection-table",
+        text:`
+        CREATE TABLE IF NOT EXISTS connection (
+            id SERIAL PRIMARY KEY,
+            token VARCHAR(255) NOT NULL,
+            username VARCHAR(50) NOT NULL
+    );`};
+
+    pgClient.query(query)
+        .then(() => console.log("Created connection table successfully"))
+        .catch(error => console.error("Error creating connection table:", error));
+}
+
 function createUsersTable(){
     const query = {
         name: "create-users-table",
@@ -41,27 +56,13 @@ function createUsersTable(){
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             username VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL
+            password VARCHAR(255) NOT NULL,
+            role VARCHAR(50) NOT NULL
     );`};
 
     pgClient.query(query)
         .then(() => console.log("Created users table successfully"))
         .catch(error => console.error("Error creating users table:", error));
-}
-
-function createAdminTable(){
-    const query = {
-        name: "create-admin-table",
-        text:`
-        CREATE TABLE IF NOT EXISTS admin (
-            id SERIAL PRIMARY KEY,
-            username VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL
-    );`};
-
-    pgClient.query(query)
-        .then(() => console.log("Created admin table successfully"))
-        .catch(error => console.error("Error creating admin table:", error));
 }
 
 function createRoomDataTable(){
@@ -96,8 +97,8 @@ function createRoomsTable(){
 }
 
 function createAllTables(){
+    createConnectionTable();
     createUsersTable();
-    createAdminTable();
     createRoomDataTable();
     createRoomsTable();
 }

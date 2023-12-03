@@ -1,11 +1,12 @@
 const { hashSync } = require("bcrypt");
 const {getClient} = require("./dbSetup");
+const bcrypt = require("bcrypt");
 
 async function fillDatabase(db) {
     console.log(db)
     return new Promise((resolve, reject) => {
         // Check if the admin already exists
-        db.get(`SELECT * FROM admin WHERE username = ?`, ['admin'], (selectErr, row) => {
+        db.get(`SELECT * FROM users WHERE username = ?`, ['admin'], (selectErr, row) => {
             if (selectErr) {
                 console.error("Error checking if admin exists:", selectErr.message);
                 reject(selectErr);
@@ -13,8 +14,8 @@ async function fillDatabase(db) {
                 // If the admin does not exist, insert it
                 if (!row) {
                     const password = hashSync('admin', 10);
-                    db.run(`INSERT INTO admin (username, password)
-                  VALUES (?, ?)`, ['admin', password], (insertErr) => {
+                    db.run(`INSERT INTO users (username, password, role)
+                  VALUES (?, ?)`, ['admin', password, 'admin'], (insertErr) => {
                         if (insertErr) {
                             console.error("Error inserting default admin:", insertErr.message);
                             reject(insertErr);
@@ -38,15 +39,15 @@ async function fillDb() {
     try {
         const query = {
             name: 'fetch-admin',
-            text: `SELECT * FROM admin WHERE username = $1`,
+            text: `SELECT * FROM users WHERE username = $1`,
             values: ['admin']
         };
         const res = await pgClient.query(query)
         if (res.rows.length === 0) {
-            const password = hashSync('admin', 10);
+            const password = await bcrypt.hash('admin', 10);
             const query = {
                 name: 'insert-admin',
-                text: `INSERT INTO admin (username, password) VALUES ($1, $2)`,
+                text: `INSERT INTO users (username, password, role) VALUES ($1, $2, 'admin')`,
                 values: ['admin', password]
             };
             await pgClient.query(query)

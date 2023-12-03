@@ -3,14 +3,44 @@ function verifyTokenAdmin(req, res, next) {
     const token = req.cookies.token; // Extracting the token from the header
     //console.log('server token:', token, typeof token);
 
+    if (!token) return res.sendStatus(403); // Forbidden
+
     jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
         if (err) {
-            console.error('Error verifying token:', err);
+            console.error('Error verifying admin token:', err);
             return res.sendStatus(403); // Forbidden
         }
         //console.log('Decoded token data:', decoded);
         next();
     });
+}
+
+function isAdminFunction(req) {
+    return new Promise((resolve, reject) => {
+        const token = req.cookies.token; // Extracting the token from the header
+        //console.log('server token:', token, typeof token);
+
+        if (!token) return resolve(false);
+
+        jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
+            if (err) {
+                //console.error('Error verifying token:', err);
+                resolve(false); // Forbidden
+            } else {
+                //console.log('Decoded token data:', decoded);
+                resolve(true);
+            }
+        });
+    });
+}
+
+async function isConnected(req, res, next) {
+const token = req.cookies.token;
+    if (token) {
+
+    } else {
+        res.redirect('/');
+    }
 }
 
 const fs = require('fs');
@@ -50,5 +80,5 @@ async function getConnectedUsers() {
 
 
 module.exports = {
-    verifyTokenAdmin, getConnectedUsers,
+    verifyTokenAdmin, isAdminFunction, getConnectedUsers,
 };

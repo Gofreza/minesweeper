@@ -113,19 +113,18 @@ connectDatabase()
 
         const configureSocket = require('./socket/socket');
         configureSocket(server, sessionMiddleware, app);
+
+        // ********************
+        // *** Start server ***
+        // ********************
+
+        server.listen(port, () => {
+            console.log(`Server running at http://127.0.0.1:${port}/`);
+        });
     })
     .catch(error => {
         console.error("Error connectdb:", error.message);
     });
-
-
-// ********************
-// *** Start server ***
-// ********************
-
-server.listen(port, () => {
-    console.log(`Server running at http://127.0.0.1:${port}/`);
-});
 
 process.on("exit", function () {
     disconnectDatabase()

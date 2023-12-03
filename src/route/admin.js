@@ -1,13 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
-const jwt = require("jsonwebtoken");
-const {verifyTokenAdmin, getConnectedUsers} = require("../miscFunction");
+const {verifyTokenAdmin, getConnectedUsers, isAdminFunction} = require("../miscFunction");
+const authFunctions = require("../database/dbAuth");
+const {getClient} = require("../database/dbSetup");
 
-router.get('/adminDashboard', verifyTokenAdmin, (req, res) => {
+router.get('/adminDashboard', verifyTokenAdmin, async (req, res) => {
+    const token = req.cookies.token;
+    const isConnected = await authFunctions.isConnectedPG(getClient(), token);
+    const isAdmin = await isAdminFunction(req);
     res.render('../view/page/adminDashboard.pug', {
         title: 'Admin Dashboard',
         showMenuBar: true,
+        loggedIn: isConnected,
+        admin: isAdmin,
     });
 });
 

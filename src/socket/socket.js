@@ -313,6 +313,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             // Disconnect all connected sockets
             connectedSockets.forEach(socket => socket.disconnect());
 
+
             res.status(200).json({ success: true });
         });
     });

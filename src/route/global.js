@@ -4,32 +4,43 @@ const router = express.Router();
 const Logger = require('../logger/logger');
 const logger = new Logger();
 
-const {setupDatabase, getDatabase} = require('../database/dbSetup');
+const {setupDatabase, getDatabase, getClient} = require('../database/dbSetup');
+const authFunctions = require('../database/dbAuth');
 const roomFunctions = require('../database/dbRoomData');
-const {verifyTokenAdmin} = require("../miscFunction");
+const {verifyTokenAdmin, isAdminFunction} = require("../miscFunction");
 let db;
 getDatabase().then((database) => {
     db = database;
     console.log("Database link global.js");
 })
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     const sessionId = req.sessionID;
     //console.log('Express Session ID:', sessionId);
     //Put the sessionId inside a cookie
     res.cookie('sessionId', sessionId, {httpOnly: true});
+    const token = req.cookies.token;
+    const isConnected = await authFunctions.isConnectedPG(getClient(), token);
+    const isAdmin = await isAdminFunction(req);
     res.render("../view/page/home.pug", {
-        title:"Home",
+        title: "Home",
         boardLength: 5,
         boardWidth: 5,
         showMenuBar: true,
+        loggedIn: isConnected,
+        admin: isAdmin,
     })
 })
 
-router.get('/test', (req, res) => {
+router.get('/test', async (req, res) => {
+    const token = req.cookies.token;
+    const isConnected = await authFunctions.isConnectedPG(getClient(), token);
+    const isAdmin = await isAdminFunction(req);
     logger.log("Solo game room launched");
     res.render('../view/page/test.pug', {
         title: "MineSweeper",
         showMenuBar: true,
+        loggedIn: isConnected,
+        admin: isAdmin,
     });
 })
 
