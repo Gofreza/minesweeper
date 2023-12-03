@@ -8,11 +8,47 @@ const {setupDatabase, getDatabase, getClient} = require('../database/dbSetup');
 const authFunctions = require('../database/dbAuth');
 const roomFunctions = require('../database/dbRoomData');
 const {verifyTokenAdmin, isAdminFunction} = require("../miscFunction");
+const {verify} = require("jsonwebtoken");
 let db;
 getDatabase().then((database) => {
     db = database;
     console.log("Database link global.js");
 })
+
+router.get('*', (req, res, next) => {
+    const token = req.cookies.token;
+
+    if (token) {
+        if (req.session.username) {
+            next();
+        } else {
+            verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
+                if (err) {
+                    // Token verification failed
+                    //console.error('Token verification failed:', err);
+                } else {
+                    // Token decoded successfully
+                    req.session.username = decoded.username;
+                    //console.log('Username from token:', username);
+                }
+            });
+            verify(token, process.env.SECRET_KEY, (err, decoded) => {
+                if (err) {
+                    // Token verification failed
+                    //console.error('Token verification failed:', err);
+                } else {
+                    // Token decoded successfully
+                    req.session.username = decoded.username;
+                    //console.log('Username from token:', username);
+                }
+            });
+            next();
+        }
+    } else {
+        next();
+    }
+})
+
 router.get('/', async (req, res) => {
     const sessionId = req.sessionID;
     //console.log('Express Session ID:', sessionId);
@@ -21,6 +57,8 @@ router.get('/', async (req, res) => {
     const token = req.cookies.token;
     const isConnected = await authFunctions.isConnectedPG(getClient(), token);
     const isAdmin = await isAdminFunction(req);
+    const username = req.session.username
+
     res.render("../view/page/home.pug", {
         title: "Home",
         boardLength: 5,
@@ -28,6 +66,7 @@ router.get('/', async (req, res) => {
         showMenuBar: true,
         loggedIn: isConnected,
         admin: isAdmin,
+        username: username,
     })
 })
 

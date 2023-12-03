@@ -123,5 +123,16 @@ block layout-content
             }
         });
 
+        // Set default username
+        var username = !{JSON.stringify(username)};
+
+        if (username) {
+            inputNameCreateRoom.value = username;
+            inputNameJoinRoom.value = username;
+
+            inputNameCreateRoom.disabled = true;
+            inputNameJoinRoom.disabled = true;
+        }
+
 
 
