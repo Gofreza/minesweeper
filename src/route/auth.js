@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 
-const {setupDatabase, getDatabase} = require('../database/dbSetup');
+const {setupDatabase, getDatabase, getClient} = require('../database/dbSetup');
 const authFunctions = require('../database/dbAuth');
 let db;
 getDatabase().then((database) => {
@@ -20,7 +20,8 @@ router.post('/login', async (req, res) => {
     const {username, password} = req.body;
 
     try {
-        const hashedPassword = await authFunctions.getHash(db, username);
+        const pgClient = getClient()
+        const hashedPassword = await authFunctions.getHashPG(pgClient, username);
         if (hashedPassword) {
             bcrypt.compare(password, hashedPassword, (bcryptError, bcryptResult) => {
                 if (bcryptError) {
@@ -35,7 +36,7 @@ router.post('/login', async (req, res) => {
                 }
 
                 // Password is correct, proceed with admin check
-                checkAdmin();
+                checkAdmin(pgClient);
             });
         } else {
             // No password found
@@ -43,9 +44,9 @@ router.post('/login', async (req, res) => {
             return res.redirect('/');
         }
 
-        async function checkAdmin() {
+        async function checkAdmin(pgClient) {
             try {
-                if (await authFunctions.isAdmin(db, username, hashedPassword)) {
+                if (await authFunctions.isAdminPG(pgClient, username, hashedPassword)) {
                     const token = jwt.sign({ username: username }, process.env.SECRET_KEY_ADMIN, { expiresIn: '1h' });
                     res.cookie('token', token, { httpOnly: true });
                     return res.redirect('/adminDashboard');

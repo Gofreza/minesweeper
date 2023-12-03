@@ -2,9 +2,10 @@
 const { Server } = require("socket.io");
 const sharedSession = require('express-socket.io-session');
 // Database
-const {getDatabase} = require('../database/dbSetup');
+const {getDatabase, getClient} = require('../database/dbSetup');
 const roomFunctions = require('../database/dbRoomData');
 const userFunctions = require('../database/dbRooms');
+let pgClient = getClient();
 let db;
 getDatabase().then((database) => {
     db = database;
@@ -115,6 +116,8 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             const username = data.username;
             let usersReady = 0;
 
+            console.log("Quit:", rooms[roomName].usersReady)
+
             if (rooms[roomName]) {
                 socket.leave(roomName);
                 socket.handshake.session.room = undefined;
@@ -132,7 +135,8 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 if (rooms[roomName].slot === 0) {
                     logger.log(`Room deleted : ${roomName}`);
                     delete rooms[roomName];
-                    await roomFunctions.deleteRoomData(db, roomName);
+                    //await roomFunctions.deleteRoomData(db, roomName);
+                    await roomFunctions.deleteRoomDataPG(pgClient, roomName);
                 } else {
                     io.to(roomName).emit('roomData', {
                         roomName: roomName,
@@ -186,8 +190,11 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             const roomName = data.roomName;
             const rows = data.rows ? data.rows : 10;
             const cols = data.cols ? data.cols : 10;
-            if (!await roomFunctions.checkIfRoomExists(db, roomName)) {
+            /*if (!await roomFunctions.checkIfRoomExists(db, roomName)) {
                 await roomFunctions.setRoomData(db, roomName, rows, cols);
+            }*/
+            if (!await roomFunctions.checkIfRoomExistsPG(pgClient, roomName)) {
+                await roomFunctions.setRoomDataPG(pgClient, roomName, rows, cols);
             }
             const numBombs = Math.floor(rows * cols * parseFloat(process.env.BOMB_DENSITY_NORMAL));
             const bombCoordinates = generateBombCoordinates(rows, cols, numBombs);
@@ -211,16 +218,23 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             //console.log("Game finished server side in room " + roomName + " with result " + username + " : " + result + " !");
             logger.log(`${socket.handshake.session.id} : ${socket.handshake.session.username} finished his game in room ${roomName} with result ${result}`)
             // Put result in the db
-            await userFunctions.addUserScore(db, roomName, username, result);
+            //await userFunctions.addUserScore(db, roomName, username, result);
+            await userFunctions.addUserScorePG(pgClient, roomName, username, result);
             // Check if there are the two results
             // If there are send the result to the two players io.emit[roomName].emit('versusGameResult', result)
-            if (await userFunctions.checkResults(db, roomName, playerNumber)) {
+            const isGameFinished = await userFunctions.checkResultsPG(pgClient, roomName, playerNumber);
+            console.log("Game as ended everywhere !", isGameFinished);
+            if (isGameFinished) {
+            //if (await userFunctions.checkResults(db, roomName, playerNumber)) {
                 //console.log("Game as ended everywhere !");
                 logger.log(`${roomName} : Game as ended everywhere !`);
-                const results = await userFunctions.getHighestScoreFromRoomName(db, roomName);
-                const allResults = await userFunctions.getResultsFromRoomName(db, roomName);
+                //const results = await userFunctions.getHighestScoreFromRoomName(db, roomName);
+                //const allResults = await userFunctions.getResultsFromRoomName(db, roomName);
+                const results = await userFunctions.getHighestScoreFromRoomNamePG(pgClient, roomName);
+                const allResults = await userFunctions.getResultsFromRoomNamePG(pgClient, roomName);
                 io.to(roomName).emit('versusGameResult', {result:results.score, winner:results.username, results:allResults});
-                await userFunctions.deleteAllUserScores(db, roomName);
+                //await userFunctions.deleteAllUserScores(db, roomName);
+                await userFunctions.deleteAllUserScoresPG(pgClient, roomName);
                 rooms[roomName].started = false;
             }
         })
@@ -265,7 +279,8 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 rooms[roomName].slot -= 1;
                 if (rooms[roomName].slot === 0) {
                     delete rooms[roomName];
-                    await roomFunctions.deleteRoomData(db, roomName);
+                    //await roomFunctions.deleteRoomData(db, roomName);
+                    await roomFunctions.deleteRoomDataPG(pgClient, roomName);
                 } else {
                     io.to(roomName).emit('roomData', {
                         roomName: roomName,

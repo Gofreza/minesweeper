@@ -41,15 +41,18 @@ app.use(cookieParser());
 // *** Database Set Up ***
 // ***********************
 
-const {setupDatabase} = require("./database/dbSetup");
+const {setupDatabase, connectDatabase, disconnectDatabase, getClient} = require("./database/dbSetup");
 const roomFunctions = require("./database/dbRoomData");
-const fillDatabase = require("./database/dbFill");
-let db;
+const {fillDatabase} = require("./database/dbFill");
+const {fillDb} = require("./database/dbFill");
+let pgClient = null;
+/*let db;
 setupDatabase()
     .then((database) => {
         db = database;
         console.log("Database created App.js");
-        return roomFunctions.deleteAllRoomData(db);
+        //return roomFunctions.deleteAllRoomData(db);
+        return roomFunctions.deleteAllRoomDataPG(pgClient);
     })
     .then(() => {
         console.log("All room data deleted");
@@ -77,8 +80,44 @@ setupDatabase()
         configureSocket(server, sessionMiddleware, app);
     })
     .catch(error => {
-        console.error("Error:", error.message);
+        console.error("Error setup db:", error.message);
     });
+
+ */
+
+connectDatabase()
+    .then(() => {
+        console.log("Connected to postgres database");
+        return fillDb();
+    })
+    .then(() => {
+        console.log("Database filled");
+        pgClient = getClient();
+        return roomFunctions.deleteAllRoomDataPG(pgClient);
+    })
+    .then(() => {
+
+        // ********************
+        // *** Route config ***
+        // ********************
+
+        //const authRoutes = require('./route/auth');
+        const adminRoutes = require('./route/admin');
+        const testRoutes = require('./route/global');
+        const authRoutes = require('./route/auth');
+        app.use(testRoutes, adminRoutes, authRoutes);
+
+        // *********************
+        // *** Socket config ***
+        // *********************
+
+        const configureSocket = require('./socket/socket');
+        configureSocket(server, sessionMiddleware, app);
+    })
+    .catch(error => {
+        console.error("Error connectdb:", error.message);
+    });
+
 
 // ********************
 // *** Start server ***
@@ -87,3 +126,7 @@ setupDatabase()
 server.listen(port, () => {
     console.log(`Server running at http://127.0.0.1:${port}/`);
 });
+
+process.on("exit", function () {
+    disconnectDatabase()
+})

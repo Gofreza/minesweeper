@@ -1,6 +1,110 @@
 const sqlite3 = require('sqlite3').verbose();
+const dotenv = require('dotenv');
+const pg = require("pg");
 
 let dbInstance = null;
+let pgClient = null;
+
+// *******************
+// *** PostgresSQL ***
+// *******************
+
+const connectDatabase = async () => {
+    try {
+        // Initialize the database configuration
+        pgClient = new pg.Client(process.env.POSTGRESQL_ADDON_URI);
+
+        // Connect to the database
+        await pgClient.connect();
+
+        // Create the tables if they don't exist
+        createAllTables();
+
+        console.log('Connected to the database');
+    } catch (error) {
+        console.error('Error connecting to the database: ', error);
+    }
+};
+
+function disconnectDatabase(){
+    pgClient.end();
+}
+
+function getClient(){
+    return pgClient;
+}
+
+function createUsersTable(){
+    const query = {
+        name: "create-users-table",
+        text:`
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL
+    );`};
+
+    pgClient.query(query)
+        .then(() => console.log("Created users table successfully"))
+        .catch(error => console.error("Error creating users table:", error));
+}
+
+function createAdminTable(){
+    const query = {
+        name: "create-admin-table",
+        text:`
+        CREATE TABLE IF NOT EXISTS admin (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL
+    );`};
+
+    pgClient.query(query)
+        .then(() => console.log("Created admin table successfully"))
+        .catch(error => console.error("Error creating admin table:", error));
+}
+
+function createRoomDataTable(){
+    const query = {
+        name: "create-roomData-table",
+        text:`
+        CREATE TABLE IF NOT EXISTS roomData (
+            roomName VARCHAR(50) PRIMARY KEY,
+            numRows INTEGER NOT NULL,
+            numCols INTEGER NOT NULL
+    );`};
+
+    pgClient.query(query)
+        .then(() => console.log("Created roomData table successfully"))
+        .catch(error => console.error("Error creating roomData table:", error));
+}
+
+function createRoomsTable(){
+    const query = {
+        name: "create-rooms-table",
+        text:`
+        CREATE TABLE IF NOT EXISTS rooms (
+            roomName VARCHAR(50) NOT NULL,
+            username VARCHAR(50) NOT NULL,
+            score INTEGER NOT NULL,
+            PRIMARY KEY (roomName, username)
+    );`};
+
+    pgClient.query(query)
+        .then(() => console.log("Created rooms table successfully"))
+        .catch(error => console.error("Error creating rooms table:", error));
+}
+
+function createAllTables(){
+    createUsersTable();
+    createAdminTable();
+    createRoomDataTable();
+    createRoomsTable();
+}
+
+// **************
+// *** SQLite ***
+// **************
 
 /**
  * Set up the database
@@ -67,6 +171,11 @@ function getDatabase() {
 }
 
 module.exports = {
+    // SQLite
     setupDatabase,
     getDatabase,
+    // PostgreSQL
+    connectDatabase,
+    disconnectDatabase,
+    getClient,
 };

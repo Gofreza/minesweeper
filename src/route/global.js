@@ -53,7 +53,8 @@ router.post('/createGrid', (req, res) => {
 router.get('/getVersusGridInfo', async (req, res) => {
     const { roomName } = req.query;
     //console.log("getVersusGridInfo roomName:", roomName);
-    const values = await roomFunctions.getRoomData(db, roomName);
+    //const values = await roomFunctions.getRoomData(db, roomName);
+    const values = await roomFunctions.getRoomDataPG(db, roomName);
     //console.log("Values getVersusGridInfo:", values);
     res.json({rows: values.rows, cols: values.cols });
 });
