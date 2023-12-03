@@ -8,8 +8,7 @@ block menu
             .menu
                 a(class="menu-item" href="/") Home
                 if loggedIn
-                    form(action='/logout', method='POST')
-                        input(type='submit', value='Logout')
+                    a(class="menu-item" href="/logout") Logout
                     a(class="menu-item" href="/profile") Profile
                     a(class="menu-item" href="/") Quest
                 else

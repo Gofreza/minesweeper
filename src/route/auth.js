@@ -143,7 +143,7 @@ router.post('/register', isNotConnected, async (req, res) => {
     }
 })
 
-router.post('/logout', verifyToken, async (req, res) => {
+router.get('/logout', verifyToken, async (req, res) => {
     try {
         const token = req.cookies.token;
 
