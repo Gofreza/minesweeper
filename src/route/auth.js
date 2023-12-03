@@ -36,10 +36,7 @@ router.get('/register', isNotConnected, async (req, res) => {
 })
 
 router.post('/login', isNotConnected, async (req, res) => {
-    let {username, password} = req.body;
-
-    if (username.length > 20)
-        username = username.substring(0, 20);
+    const {username, password} = req.body;
 
     try {
         const pgClient = getClient()
@@ -104,7 +101,10 @@ router.post('/login', isNotConnected, async (req, res) => {
 });
 
 router.post('/register', isNotConnected, async (req, res) => {
-    const {username, password, password2} = req.body;
+    let {username, password, password2} = req.body;
+
+    if (username.length > 20)
+        username = username.substring(0, 20);
 
     // Check if the passwords match
     if (password !== password2) {
