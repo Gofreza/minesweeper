@@ -8,4 +8,9 @@ router.post('/api/deconnect', (req, res) => {
     res.json({success: true});
 })
 
+router.post('/api/stats', (req, res) => {
+    const body = req.body;
+    console.log("Stats:",body);
+})
+
 module.exports = router;

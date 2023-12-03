@@ -14,7 +14,7 @@ router.post('/changePassword', verifyToken, async (req, res) => {
         return res.status(400).redirect('/profile');
     }
 
-    const oldPassword = await getHashUserPG(getClient(), req.session.username);
+    const oldPassword = await getHashUserPG(getClient(), req.session.accountUsername);
 
     if (!oldPassword) {
         // User does not exist
@@ -35,7 +35,7 @@ router.post('/changePassword', verifyToken, async (req, res) => {
     }
 
     const pgClient = getClient();
-    const username = req.session.username;
+    const username = req.session.accountUsername;
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await changePasswordPG(pgClient, username, hashedPassword);
@@ -46,10 +46,11 @@ router.post('/changePassword', verifyToken, async (req, res) => {
 })
 
 router.post('/deleteAccount', verifyToken, async (req, res) => {
-    await deleteUserPG(getClient(), req.session.username);
+    await deleteUserPG(getClient(), req.session.accountUsername);
     await deleteConnectionPG(getClient(), req.cookies.token);
     res.clearCookie('token');
     req.session.username = null;
+    req.session.accountUsername = null;
     req.flash('success', 'Account deleted successfully')
     res.redirect('/');
 })

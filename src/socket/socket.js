@@ -265,6 +265,12 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             });
         });
 
+        // Stats
+
+        socket.on('updateStats', (data) => {
+            console.log("Update stats", data);
+        })
+
         // Other
 
         app.post('/api/disconnect', async (req, res) => {

@@ -36,6 +36,7 @@ router.get('*', (req, res, next) => {
                     //console.error('Token verification failed:', err);
                 } else {
                     // Token decoded successfully
+                    req.session.accountUsername = decoded.username;
                     req.session.username = decoded.username;
                     //console.log('Username from token:', username);
                 }
@@ -53,6 +54,7 @@ router.get('*', (req, res, next) => {
                     //console.error('Token verification failed:', err);
                 } else {
                     // Token decoded successfully
+                    req.session.accountUsername = decoded.username;
                     req.session.username = decoded.username;
                     //console.log('Username from token:', username);
                 }
@@ -152,7 +154,7 @@ router.get('/profile', verifyToken, async (req, res) => {
     const token = req.cookies.token;
     const isConnected = await authFunctions.isConnectedPG(getClient(), token);
     const isAdmin = await isAdminFunction(req);
-    const username = req.session.username;
+    const username = req.session.accountUsername;
     res.render('../view/page/profile.pug', {
         title: "Profile",
         flash: req.flash(),

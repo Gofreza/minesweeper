@@ -96,11 +96,38 @@ function createRoomsTable(){
         .catch(error => console.error("Error creating rooms table:", error));
 }
 
+function createStatsTable(){
+    const query = {
+        name: "create-stats-table",
+        text:`
+        CREATE TABLE IF NOT EXISTS stats (
+            username VARCHAR(50) NOT NULL,
+            gameMode VARCHAR(50) NOT NULL,
+            numGamesPlayed INTEGER NOT NULL,
+            numGamesWon INTEGER NOT NULL,
+            numGamesLost INTEGER NOT NULL,
+            numBombsDefused INTEGER NOT NULL,
+            numBombsExploded INTEGER NOT NULL,
+            numFlagsPlaced INTEGER NOT NULL,
+            numCellsRevealed INTEGER NOT NULL,
+            averageTime INTEGER NOT NULL, 
+            fastestTime INTEGER NOT NULL,
+            longestTime INTEGER NOT NULL,
+            FOREIGN KEY (username) REFERENCES users(username),
+            PRIMARY KEY (username, gameMode)
+    );`};
+
+    pgClient.query(query)
+        .then(() => console.log("Created stats table successfully"))
+        .catch(error => console.error("Error creating stats table:", error));
+}
+
 function createAllTables(){
     createConnectionTable();
     createUsersTable();
     createRoomDataTable();
     createRoomsTable();
+    createStatsTable();
 }
 
 // **************

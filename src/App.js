@@ -109,7 +109,8 @@ connectDatabase()
         const testRoutes = require('./route/global');
         const authRoutes = require('./route/auth');
         const profileRoutes = require('./route/profile');
-        app.use(testRoutes, adminRoutes, authRoutes, profileRoutes);
+        const apiRoutes = require('./route/api');
+        app.use(testRoutes, adminRoutes, authRoutes, profileRoutes, apiRoutes);
 
         // *********************
         // *** Socket config ***

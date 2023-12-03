@@ -8,7 +8,7 @@ module.exports = [
         },
         output: {
             filename: 'main.bundle.js',
-            path: path.resolve(__dirname, '../../public/js'),
+            path: path.join(__dirname, '/public/js/'),
         },
     },
     {
@@ -18,7 +18,7 @@ module.exports = [
         },
         output: {
             filename: 'versus.bundle.js',
-            path: path.resolve(__dirname, '../../public/js'),
+            path: path.join(__dirname, '/public/js'),
         },
     }
 ];

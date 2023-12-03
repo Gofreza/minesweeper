@@ -66,6 +66,7 @@ router.post('/login', isNotConnected, async (req, res) => {
                     await authFunctions.addConnectionPG(pgClient, token, username);
 
                     // Add username to the session
+                    req.session.accountUsername = username;
                     req.session.username = username;
 
                     req.flash('success', 'Admin Logged in successfully')

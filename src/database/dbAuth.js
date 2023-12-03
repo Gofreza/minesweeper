@@ -139,25 +139,56 @@ async function usernameExistsPG(pgClient, username) {
  */
 async function insertUserPG(pgClient, username, password) {
     try {
-        const query = {
-            name: 'insert-user-pg',
-            text: `INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')`,
-            values: [username, password]
-        };
-        await pgClient.query(query)
+        const queries = [
+            {
+                name: 'insert-user-pg',
+                text: `INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')`,
+                values: [username, password]
+            },
+            {
+                name: 'insert-stats-solo-pg',
+                text: `INSERT INTO stats (username, gameMode, numGamesPlayed, numGamesWon, numGamesLost, numBombsDefused, numBombsExploded, numFlagsPlaced, numCellsRevealed, averageTime, fastestTime, longestTime)
+                       VALUES ($1, 'solo', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)`,
+                values: [username]
+            },
+            {
+                name: 'insert-stats-multi-pg',
+                text: `INSERT INTO stats (username, gameMode, numGamesPlayed, numGamesWon, numGamesLost, numBombsDefused, numBombsExploded, numFlagsPlaced, numCellsRevealed, averageTime, fastestTime, longestTime)
+                       VALUES ($1, 'multi', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)`,
+                values: [username]
+            }
+        ];
+        for (const query of queries) {
+            await pgClient.query(query);
+        }
     } catch (error) {
         console.error("Error insertUserPG:", error.message);
     }
 }
 
+/**
+ * Deletes a user with the specified username from the 'users' table.
+ * @param pgClient - The database object.
+ * @param username - The username to delete.
+ * @returns {Promise<void>} A promise that resolves when the user is successfully deleted.
+ */
 async function deleteUserPG(pgClient, username) {
     try {
-        const query = {
-            name: 'delete-user-pg',
-            text: `DELETE FROM users WHERE username = $1`,
-            values: [username]
-        };
-        await pgClient.query(query)
+        const queries = [
+            {
+                name: 'delete-stats-pg',
+                text: `DELETE FROM stats WHERE username = $1`,
+                values: [username]
+            },
+            {
+                name: 'delete-user-pg',
+                text: `DELETE FROM users WHERE username = $1`,
+                values: [username]
+            }
+        ]
+        for (const query of queries) {
+            await pgClient.query(query);
+        }
     } catch (error) {
         console.error("Error deleteUserPG:", error.message);
     }
@@ -223,6 +254,13 @@ async function isConnectedPG(pgClient, token) {
     }
 }
 
+/**
+ * Changes the password of the specified user.
+ * @param {Object} pgClient - The database object.
+ * @param {string} username - The username to change.
+ * @param {string} newPassword - The new password.
+ * @returns {Promise<unknown>} A promise that resolves if the password is successfully changed.
+ */
 async function changePasswordPG(pgClient, username, newPassword) {
     try {
         const query = {

@@ -270,6 +270,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         removeClickListeners();
 
         isGameWon();
+        //sendStats();
 
         // Revealing all bomb cells
         for (let r = 0; r < numRows; r++) {
@@ -316,6 +317,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 removeClickListeners();
                 removeTouchListeners();
                 isGameWon();
+                //sendStats();
             }
         }, longPressDuration);
     }
@@ -367,6 +369,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             removeClickListeners();
             removeTouchListeners();
             isGameWon();
+            //sendStats();
         }
     }
 
@@ -409,6 +412,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             removeClickListeners();
             removeTouchListeners();
             isGameWon();
+            //sendStats();
         }
     }
 
@@ -442,6 +446,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             removeClickListeners();
             removeTouchListeners();
             isGameWon();
+            //sendStats();
         }
     }
 
@@ -486,6 +491,5 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Draw the rest of the grid
     drawGrid(grid, ctx, numRows, numCols, cellSize);
-
 
 });
