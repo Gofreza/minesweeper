@@ -6,6 +6,7 @@ src/logger/app.log
 node_modules/
 test.js
 version.js
+/js2/
 .DS_Store
 .env
 ```
