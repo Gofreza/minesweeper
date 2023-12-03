@@ -9,7 +9,7 @@ async function updateStats(pgClient, username, stats) {
     try {
         // Retrieve the existing stats from the database
         const existingStatsQuery = {
-            name: "select-stats",
+            name: "get-existing-stats",
             text: "SELECT * FROM stats WHERE username = $1 AND gameMode = $2",
             values: [username, stats.gameMode]
         };
@@ -63,7 +63,7 @@ async function updateStats(pgClient, username, stats) {
 async function getStats(pgClient, username) {
     try {
         const query = {
-            name: "select-stats",
+            name: "get-stats",
             text: "SELECT * FROM stats WHERE username = $1",
             values: [username]
         };
