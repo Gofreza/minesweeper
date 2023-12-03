@@ -9,6 +9,7 @@ const authFunctions = require('../database/dbAuth');
 const roomFunctions = require('../database/dbRoomData');
 const {verifyTokenAdmin, isAdminFunction, verifyToken, isConnected} = require("../miscFunction");
 const {verify, TokenExpiredError} = require("jsonwebtoken");
+const {getStats} = require("../database/dbStats");
 let db;
 getDatabase().then((database) => {
     db = database;
@@ -156,6 +157,8 @@ router.get('/profile', verifyToken, async (req, res) => {
     const isAdmin = await isAdminFunction(req);
     const username = req.session.accountUsername;
     console.log("Profile username:", username)
+    const stats = await getStats(getClient(), username);
+    console.log("Stats:", stats)
     res.render('../view/page/profile.pug', {
         title: "Profile",
         flash: req.flash(),
@@ -163,6 +166,7 @@ router.get('/profile', verifyToken, async (req, res) => {
         loggedIn: isConnected,
         admin: isAdmin,
         username: username,
+        stats: stats,
     });
 })
 

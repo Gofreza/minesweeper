@@ -1,4 +1,10 @@
-
+/**
+ * Updates the stats for a user in the database.
+ * @param pgClient - The database client
+ * @param username - The username of the user
+ * @param stats - The stats to update in json format
+ * @returns {Promise<void>} - A promise that resolves when the stats have been updated
+ */
 async function updateStats(pgClient, username, stats) {
     try {
         // Retrieve the existing stats from the database
@@ -48,7 +54,28 @@ async function updateStats(pgClient, username, stats) {
     }
 }
 
+/**
+ * Gets the stats for a user from the database.
+ * @param pgClient - The database client
+ * @param username - The username of the user
+ * @returns {Promise<*>} - A promise that resolves with the stats
+ */
+async function getStats(pgClient, username) {
+    try {
+        const query = {
+            name: "select-stats",
+            text: "SELECT * FROM stats WHERE username = $1",
+            values: [username]
+        };
+
+        const result = await pgClient.query(query);
+        return result.rows;
+    } catch (error) {
+        console.error('Error occurred while getting stats:', error);
+    }
+}
+
 
 module.exports = {
-    updateStats,
+    updateStats, getStats,
 }

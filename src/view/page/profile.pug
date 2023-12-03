@@ -1,10 +1,19 @@
 extends ../layout/base
 
+block css
+    link(rel="stylesheet", href="/css/stats.css")
 block layout-content
     h1 Profile
     h2 Username: #{username}
     button(id="changePasswordButton") Change Password
     button(id="deleteAccountButton") Delete Account
+
+    each stat in stats
+        div.stat-container
+            each key, value in stat
+                p.stat-item
+                    span.stat-key #{value} :
+                    span.stat-value #{key}
 
     script.
         document.addEventListener('DOMContentLoaded', function () {
