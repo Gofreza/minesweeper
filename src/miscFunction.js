@@ -1,4 +1,47 @@
 const jwt = require("jsonwebtoken");
+const authFunctions = require('./database/dbAuth');
+const {getClient} = require("./database/dbSetup");
+
+async function verifyToken(req, res, next) {
+    const token = req.cookies.token;
+
+    // Check if the token exists and isConnected
+    if (!token) {
+        return res.redirect('/');
+    }
+
+    try {
+        const isConnected = await authFunctions.isConnectedPG(getClient(), token);
+
+        if (!isConnected) {
+            return res.redirect('/');
+        }
+
+        // Verify the token
+        jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
+            if (err) {
+                jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+                    if (err) {
+                        // Token is invalid, redirect to '/'
+                        return res.redirect('/');
+                    }
+                    // Token is valid, continue to the next middleware
+                    //console.log('Decoded token data:', decoded);
+                    next();
+                });
+            } else {
+                // Token is valid, continue to the next middleware
+                //console.log('Decoded token data:', decoded);
+                next();
+            }
+        });
+    } catch (error) {
+        console.error('Error checking connection:', error);
+        return res.redirect('/');
+    }
+}
+
+
 function verifyTokenAdmin(req, res, next) {
     const token = req.cookies.token; // Extracting the token from the header
     //console.log('server token:', token, typeof token);
@@ -35,9 +78,20 @@ function isAdminFunction(req) {
 }
 
 async function isConnected(req, res, next) {
-const token = req.cookies.token;
-    if (token) {
+    const token = req.cookies.token;
+    const isConnected = await authFunctions.isConnectedPG(getClient(), token)
+    if (token && isConnected) {
+        next();
+    } else {
+        res.redirect('/');
+    }
+}
 
+async function isNotConnected(req, res, next) {
+    const token = req.cookies.token;
+    const isConnected = await authFunctions.isConnectedPG(getClient(), token)
+    if (!token && !isConnected) {
+        next();
     } else {
         res.redirect('/');
     }
@@ -46,6 +100,7 @@ const token = req.cookies.token;
 const fs = require('fs');
 const readline = require('readline');
 const {join} = require("path");
+const {verify} = require("jsonwebtoken");
 
 async function getConnectedUsers() {
     const logFilePath = join(__dirname, '/logger/app.log');
@@ -80,5 +135,5 @@ async function getConnectedUsers() {
 
 
 module.exports = {
-    verifyTokenAdmin, isAdminFunction, getConnectedUsers,
+    verifyToken, verifyTokenAdmin, isAdminFunction, getConnectedUsers, isConnected, isNotConnected,
 };

@@ -5,13 +5,13 @@ const jwt = require("jsonwebtoken");
 
 const {setupDatabase, getDatabase, getClient} = require('../database/dbSetup');
 const authFunctions = require('../database/dbAuth');
-const {isAdminFunction} = require("../miscFunction");
+const {isAdminFunction, isNotConnected, verifyToken} = require("../miscFunction");
 let db;
 getDatabase().then((database) => {
     db = database;
     console.log("Database link auth.js");
 })
-router.get('/login', async (req, res) => {
+router.get('/login',isNotConnected, async (req, res) => {
     const token = req.cookies.token;
     const isConnected = await authFunctions.isConnectedPG(getClient(), token);
     const isAdmin = await isAdminFunction(req);
@@ -23,7 +23,7 @@ router.get('/login', async (req, res) => {
     });
 })
 
-router.get('/register', async (req, res) => {
+router.get('/register', isNotConnected, async (req, res) => {
     const token = req.cookies.token;
     const isConnected = await authFunctions.isConnectedPG(getClient(), token);
     const isAdmin = await isAdminFunction(req);
@@ -35,8 +35,11 @@ router.get('/register', async (req, res) => {
     });
 })
 
-router.post('/login', async (req, res) => {
-    const {username, password} = req.body;
+router.post('/login', isNotConnected, async (req, res) => {
+    let {username, password} = req.body;
+
+    if (username.length > 20)
+        username = username.substring(0, 20);
 
     try {
         const pgClient = getClient()
@@ -100,7 +103,7 @@ router.post('/login', async (req, res) => {
 
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', isNotConnected, async (req, res) => {
     const {username, password, password2} = req.body;
 
     // Check if the passwords match
@@ -131,7 +134,7 @@ router.post('/register', async (req, res) => {
     }
 })
 
-router.post('/logout', (req, res) => {
+router.post('/logout', verifyToken, (req, res) => {
     req.session.destroy(async err => {
         if (err) {
             console.error('Error destroying session:', err);

@@ -1,0 +1,49 @@
+extends ../layout/base
+
+block layout-content
+    h1 Profile
+    h2 Username: #{username}
+    button(id="changePasswordButton") Change Password
+
+    script.
+        document.addEventListener('DOMContentLoaded', function () {
+            let formContainer = null;
+
+            const changePasswordButton = document.getElementById('changePasswordButton');
+
+            changePasswordButton.addEventListener('click', function () {
+                if (!formContainer) {
+                    injectPasswordForm();
+                }
+                formContainer.style.display = 'block';
+            });
+
+            function injectPasswordForm() {
+                formContainer = document.createElement('div');
+                formContainer.id = 'passwordFormContainer';
+                formContainer.classList.add('form-container');
+                formContainer.style.display = 'none';
+
+                formContainer.innerHTML = `
+                    <form id="passwordForm" action="/changePassword" method="POST">
+                        <label for="currentPassword">Current Password:</label>
+                        <input type="password" name="currentPassword" id="currentPassword" required>
+                        <label for="newPassword">New Password:</label>
+                        <input type="password" name="newPassword" id="newPassword" required>
+                        <label for="confirmPassword">Confirm New Password:</label>
+                        <input type="password" name="confirmPassword" id="confirmPassword" required>
+                        <button type="submit">Change Password</button>
+                    </form>
+                    <button id="closePasswordFormButton" class="close-button" type="button">×</button>
+                `;
+
+                document.body.appendChild(formContainer);
+
+                const closePasswordFormButton = document.getElementById('closePasswordFormButton');
+                closePasswordFormButton.addEventListener('click', function () {
+                    formContainer.remove(); // Remove the form container from the DOM
+                    formContainer = null; // Reset the variable
+                });
+            }
+        });
+

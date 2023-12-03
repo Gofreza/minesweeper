@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const flash = require('connect-flash')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
@@ -36,6 +37,8 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 app.use(cookieParser());
+
+app.use(flash());
 
 // ***********************
 // *** Database Set Up ***
@@ -105,7 +108,8 @@ connectDatabase()
         const adminRoutes = require('./route/admin');
         const testRoutes = require('./route/global');
         const authRoutes = require('./route/auth');
-        app.use(testRoutes, adminRoutes, authRoutes);
+        const profileRoutes = require('./route/profile');
+        app.use(testRoutes, adminRoutes, authRoutes, profileRoutes);
 
         // *********************
         // *** Socket config ***

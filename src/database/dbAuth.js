@@ -210,10 +210,23 @@ async function isConnectedPG(pgClient, token) {
     }
 }
 
+async function changePasswordPG(pgClient, username, newPassword) {
+    try {
+        const query = {
+            name: 'change-password',
+            text: `UPDATE users SET password = $1 WHERE username = $2`,
+            values: [newPassword, username]
+        };
+        await pgClient.query(query)
+    } catch (error) {
+        console.error("Error changePasswordPG:", error.message);
+    }
+}
+
 module.exports = {
     // SQLite
     isAdmin, getHash,
     // PostgresSQL
     isAdminPG, getHashUserPG, usernameExistsPG, insertUserPG,
-    addConnectionPG, deleteConnectionPG, isConnectedPG,
+    addConnectionPG, deleteConnectionPG, isConnectedPG, changePasswordPG,
 }

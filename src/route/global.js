@@ -7,7 +7,7 @@ const logger = new Logger();
 const {setupDatabase, getDatabase, getClient} = require('../database/dbSetup');
 const authFunctions = require('../database/dbAuth');
 const roomFunctions = require('../database/dbRoomData');
-const {verifyTokenAdmin, isAdminFunction} = require("../miscFunction");
+const {verifyTokenAdmin, isAdminFunction, verifyToken, isConnected} = require("../miscFunction");
 const {verify, TokenExpiredError} = require("jsonwebtoken");
 let db;
 getDatabase().then((database) => {
@@ -137,5 +137,20 @@ router.get('/room', (req, res) => {
         username:username,
     });
 });
+
+router.get('/profile', verifyToken, async (req, res) => {
+    const token = req.cookies.token;
+    const isConnected = await authFunctions.isConnectedPG(getClient(), token);
+    const isAdmin = await isAdminFunction(req);
+    const username = req.session.username;
+    res.render('../view/page/profile.pug', {
+        title: "Profile",
+        flash: req.flash(),
+        showMenuBar: true,
+        loggedIn: isConnected,
+        admin: isAdmin,
+        username: username,
+    });
+})
 
 module.exports = router;
