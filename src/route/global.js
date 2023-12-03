@@ -158,7 +158,6 @@ router.get('/profile', verifyToken, async (req, res) => {
     const username = req.session.accountUsername;
     console.log("Profile username:", username)
     const stats = await getStats(getClient(), username);
-    console.log("Stats:", stats)
     res.render('../view/page/profile.pug', {
         title: "Profile",
         flash: req.flash(),
