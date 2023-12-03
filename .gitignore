@@ -5,6 +5,7 @@ src/logger/app.log
 .idea/
 node_modules/
 test.js
+version.js
 .DS_Store
 .env
 ```
