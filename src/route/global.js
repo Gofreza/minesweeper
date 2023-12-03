@@ -8,7 +8,7 @@ const {setupDatabase, getDatabase, getClient} = require('../database/dbSetup');
 const authFunctions = require('../database/dbAuth');
 const roomFunctions = require('../database/dbRoomData');
 const {verifyTokenAdmin, isAdminFunction} = require("../miscFunction");
-const {verify} = require("jsonwebtoken");
+const {verify, TokenExpiredError} = require("jsonwebtoken");
 let db;
 getDatabase().then((database) => {
     db = database;
@@ -22,8 +22,14 @@ router.get('*', (req, res, next) => {
         if (req.session.username) {
             next();
         } else {
-            verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
-                if (err) {
+            verify(token, process.env.SECRET_KEY_ADMIN, async (err, decoded) => {
+                if (err instanceof TokenExpiredError) {
+                    // Token has expired
+                    //console.error('Token has expired:', err.expiredAt);
+                    await authFunctions.deleteConnectionPG(getClient(), token);
+                    res.clearCookie('token');
+                    res.redirect('/logout');
+                } else if (err) {
                     // Token verification failed
                     //console.error('Token verification failed:', err);
                 } else {
