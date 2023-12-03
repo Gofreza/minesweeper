@@ -96,6 +96,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     const ctx = canvas.getContext('2d');
     let isGameWin = false;
 
+    //Stats
+    let numBombsDefused = 0;
+    let numBombsExploded = 0;
+    let numFlagsPlaced = 0;
+    let numCellsRevealed = 0;
+
     //Timer
     const timer = document.getElementById('timer');
     let timerInterval = null;
@@ -198,10 +204,35 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (grid.matrix[row][col].isFlagged()) {
             return;
         }
-        return grid.matrix[row][col].hasBomb();
+        if (grid.matrix[row][col].hasBomb()) {
+            numBombsExploded = 1;
+            for (let row = 0; row < numRows; row++) {
+                for (let col = 0; col < numCols; col++) {
+                    const cell = grid.matrix[row][col];
+
+                    if (cell.isVisible()){
+                        numCellsRevealed++;
+                    }
+                    if (cell.isFlagged()) {
+                        numFlagsPlaced++;
+                    }
+                    if (cell.isFlagged() && cell.hasBomb()) {
+                        numBombsDefused++;
+                    }
+                }
+            }
+            console.log("Lose: ", numBombsExploded, numBombsDefused, numFlagsPlaced, numCellsRevealed)
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function checkIfGameEnded() {
+        numBombsDefused = 0;
+        numBombsExploded = 0;
+        numFlagsPlaced = 0;
+        numCellsRevealed = 0;
         let bombNumber = 0;
         let flagNumber = 0;
         let visibleNonBombCells = 0;
@@ -234,7 +265,14 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         }
 
-        return bombNumber === flagNumber && visibleNonBombCells === (numRows * numCols - bombNumber);
+        if (bombNumber === flagNumber && visibleNonBombCells === (numRows * numCols - bombNumber)) {
+            numBombsDefused = bombNumber;
+            numFlagsPlaced = flagNumber;
+            numCellsRevealed = numRows * numCols - flagNumber;
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
@@ -268,6 +306,37 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    function sendStats() {
+        const stats = {
+            gameMode: 'solo',
+            numGamesPlayed: 1,
+            numGamesWon: isGameWin ? 1 : 0,
+            numGamesLost: isGameWin ? 0 : 1,
+            numBombsDefused: numBombsDefused,
+            numBombsExploded: numBombsExploded,
+            numFlagsPlaced: numFlagsPlaced,
+            numCellsRevealed: numCellsRevealed,
+            averageTime: timeElapsed,
+            fastestTime: timeElapsed,
+            longestTime: timeElapsed,
+        }
+
+        fetch('/api/stats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(stats)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
     function lose(){
         //console.log("Game Over! You clicked on a bomb.");
         stopTimer()
@@ -275,7 +344,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         removeClickListeners();
 
         isGameWon();
-        //sendStats();
+        sendStats();
 
         // Revealing all bomb cells
         for (let r = 0; r < numRows; r++) {
@@ -332,7 +401,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 removeClickListeners();
                 removeTouchListeners();
                 isGameWon();
-                //sendStats();
+                sendStats();
             }
         }, longPressDuration);
     }
@@ -389,7 +458,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             removeClickListeners();
             removeTouchListeners();
             isGameWon();
-            //sendStats();
+            sendStats();
         }
     }
 
@@ -437,7 +506,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             removeClickListeners();
             removeTouchListeners();
             isGameWon();
-            //sendStats();
+            sendStats();
         }
     }
 
@@ -476,7 +545,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             removeClickListeners();
             removeTouchListeners();
             isGameWon();
-            //sendStats();
+            sendStats();
         }
     }
 

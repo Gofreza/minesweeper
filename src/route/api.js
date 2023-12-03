@@ -1,4 +1,7 @@
 const express = require('express');
+const {getClient} = require("../database/dbSetup");
+const {isConnectedPG} = require("../database/dbAuth");
+const {updateStats} = require("../database/dbStats");
 const router = express.Router();
 
 router.post('/api/deconnect', (req, res) => {
@@ -8,9 +11,14 @@ router.post('/api/deconnect', (req, res) => {
     res.json({success: true});
 })
 
-router.post('/api/stats', (req, res) => {
+router.post('/api/stats', async (req, res) => {
     const body = req.body;
-    console.log("Stats:",body);
+    const token = req.cookies.token;
+    const isConnected = await isConnectedPG(getClient(), token);
+    const username = req.session.accountUsername;
+    if (isConnected) {
+        await updateStats(getClient(), username, body);
+    }
 })
 
 module.exports = router;

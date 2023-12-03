@@ -1,16 +1,53 @@
 
-async function updateStats(pgClient, username, gameMode, stats) {
+async function updateStats(pgClient, username, stats) {
     try {
-        const query = {
+        // Retrieve the existing stats from the database
+        const existingStatsQuery = {
+            name: "select-stats",
+            text: "SELECT * FROM stats WHERE username = $1 AND gameMode = $2",
+            values: [username, stats.gameMode]
+        };
+
+        const existingStatsResult = await pgClient.query(existingStatsQuery);
+        const existingStats = existingStatsResult.rows[0];
+
+        // If there are existing stats, add the new values to them
+        if (existingStats) {
+            stats.numGamesPlayed += existingStats.numgamesplayed || 0;
+            stats.numGamesWon += existingStats.numgameswon || 0;
+            stats.numGamesLost += existingStats.numgameslost || 0;
+            stats.numBombsDefused += existingStats.numbombsdefused || 0;
+            stats.numBombsExploded += existingStats.numbombsexploded || 0;
+            stats.numFlagsPlaced += existingStats.numflagsplaced || 0;
+            stats.numCellsRevealed += existingStats.numcellsrevealed || 0;
+
+            // Handle time-related statistics
+            if (existingStats.averageTime) {
+                stats.averageTime = (stats.averageTime * stats.numGamesPlayed + existingStats.averageTime * existingStats.numGamesPlayed) / (stats.numGamesPlayed + existingStats.numGamesPlayed);
+            }
+
+            stats.fastestTime = Math.min(stats.fastestTime, existingStats.fastestTime || Infinity);
+            stats.longestTime = Math.max(stats.longestTime, existingStats.longestTime || 0);
+        }
+
+        // Update the stats in the database
+        const updateQuery = {
             name: "update-stats",
             text: `UPDATE stats SET numGamesPlayed = $3, numGamesWon = $4, numGamesLost = $5, numBombsDefused = $6, numBombsExploded = $7, numFlagsPlaced = $8, numCellsRevealed = $9, averageTime = $10, fastestTime = $11, longestTime = $12 WHERE username = $1 AND gameMode = $2`,
-            values: [username, gameMode, stats.numGamesPlayed, stats.numGamesWon, stats.numGamesLost, stats.numBombsDefused, stats.numBombsExploded, stats.numFlagsPlaced, stats.numCellsRevealed, stats.averageTime, stats.fastestTime, stats.longestTime]
+            values: [
+                username, stats.gameMode,
+                stats.numGamesPlayed, stats.numGamesWon, stats.numGamesLost,
+                stats.numBombsDefused, stats.numBombsExploded, stats.numFlagsPlaced,
+                stats.numCellsRevealed, stats.averageTime, stats.fastestTime, stats.longestTime
+            ]
         };
-        await pgClient.query(query);
+
+        await pgClient.query(updateQuery);
     } catch (error) {
         console.error('Error occurred while updating stats:', error);
     }
 }
+
 
 module.exports = {
     updateStats,

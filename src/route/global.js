@@ -19,7 +19,7 @@ router.get('*', (req, res, next) => {
     const token = req.cookies.token;
 
     if (token) {
-        if (req.session.username) {
+        if (req.session.username && req.session.accountUsername) {
             next();
         } else {
             verify(token, process.env.SECRET_KEY_ADMIN, async (err, decoded) => {
@@ -155,6 +155,7 @@ router.get('/profile', verifyToken, async (req, res) => {
     const isConnected = await authFunctions.isConnectedPG(getClient(), token);
     const isAdmin = await isAdminFunction(req);
     const username = req.session.accountUsername;
+    console.log("Profile username:", username)
     res.render('../view/page/profile.pug', {
         title: "Profile",
         flash: req.flash(),
