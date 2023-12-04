@@ -188,6 +188,23 @@ block layout-content
                 resultsText += `${index + 1}. ${result.username} - Score: ${result.score}\n`;
             });
             results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
+
+            // Update winning stats
+            fetch('/api/winningStats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({winner: data.winner})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    //console.log('Success room:', data);
+                })
+                .catch((error) => {
+                    //console.error('Error room:', error.error);
+                });
+
             results.innerText = results.innerText + "\n" + resultsText;
             clickStartButton = 0;
             userReady = 0;

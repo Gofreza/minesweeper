@@ -75,7 +75,27 @@ async function getStats(pgClient, username) {
     }
 }
 
+/**
+ * Updates the winning stats for a user in the database.
+ * @param pgClient - The database client
+ * @param username - The username of the user
+ * @param stats - The stats to update in json format
+ *                numGamesWon and numGamesLost are the only stats that are updated
+ * @returns {Promise<void>} - A promise that resolves when the stats have been updated
+ */
+async function updateWinningStats(pgClient, username, stats) {
+    try {
+        const query = {
+            name: "update-winning-stats",
+            text: "UPDATE stats SET numgameswon = numgameswon + $1, numgameslost = numgameslost + $2 WHERE username = $3 AND gamemode = 'multi'",
+            values: [stats.numGamesWon, stats.numGamesLost, username]
+        }
+        await pgClient.query(query);
+    } catch (error) {
+        console.error('Error occurred while updating winning stats:', error);
+    }
+}
 
 module.exports = {
-    updateStats, getStats,
+    updateStats, getStats, updateWinningStats,
 }

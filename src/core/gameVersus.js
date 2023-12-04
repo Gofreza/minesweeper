@@ -68,6 +68,12 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
     let zoomFactor = 1;
     let isGameWin = false;
 
+    //Stats
+    let numBombsDefused = 0;
+    let numBombsExploded = 0;
+    let numFlagsPlaced = 0;
+    let numCellsRevealed = 0;
+
     //Timer
     const timer = document.getElementById('timer');
     let timerInterval = null;
@@ -126,10 +132,15 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         let bombNumber = 0;
         let flagNumber = 0;
         let visibleNonBombCells = 0;
+        let bombExploded = 0;
 
         for (let row = 0; row < numRows; row++) {
             for (let col = 0; col < numCols; col++) {
                 const cell = grid.matrix[row][col];
+
+                if (cell.isFlagged() && cell.getExploded()) {
+                    bombExploded++;
+                }
 
                 if (cell.hasBomb()) {
                     bombNumber++;
@@ -155,8 +166,15 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
             }
         }
 
-        return bombNumber === flagNumber && visibleNonBombCells === (numRows * numCols - bombNumber);
-
+        if (bombNumber === flagNumber && visibleNonBombCells === (numRows * numCols - bombNumber)) {
+            numBombsDefused = bombNumber - bombExploded;
+            numBombsExploded = bombExploded;
+            numFlagsPlaced = flagNumber - bombExploded;
+            numCellsRevealed = numRows * numCols - flagNumber;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function removeClickListeners() {
@@ -167,6 +185,37 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
     function addClickListeners() {
         canvas.addEventListener('click', clickHandler);
         canvas.addEventListener('contextmenu', contextMenuHandler);
+    }
+
+    function sendStats() {
+        const stats = {
+            gameMode: 'multi',
+            numGamesPlayed: 1,
+            numGamesWon: 0, //Done in the room socket
+            numGamesLost: 0, //Done in the room socket
+            numBombsDefused: numBombsDefused,
+            numBombsExploded: numBombsExploded,
+            numFlagsPlaced: numFlagsPlaced,
+            numCellsRevealed: numCellsRevealed,
+            averageTime: timeElapsed,
+            fastestTime: timeElapsed,
+            longestTime: timeElapsed,
+        }
+
+        fetch('/api/stats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(stats)
+        })
+            .then(response => response.json())
+            .then(data => {
+                //console.log('Success:', data);
+            })
+            .catch((error) => {
+                //console.error('Error:', error);
+            });
     }
 
     function lose() {
@@ -257,6 +306,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
             removeClickListeners();
             //isGameWon();
             handleGameEnd(timeElapsed);
+            sendStats();
         }
     }
 
@@ -299,6 +349,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
             removeClickListeners();
             //isGameWon();
             handleGameEnd(timeElapsed);
+            sendStats();
         }
     }
 
