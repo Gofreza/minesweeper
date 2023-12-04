@@ -189,6 +189,7 @@ block layout-content
             });
             results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
 
+            console.log("Stats room:",numBombsDefused, numBombsExploded, numFlagsPlaced, numCellsRevealed, timeElapsed)
             // Update winning stats
             fetch('/api/winningStats', {
                 method: 'POST',

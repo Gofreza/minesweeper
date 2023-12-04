@@ -26,11 +26,11 @@ router.get('/clear', verifyToken, (req, res) => {
 
 router.get('*', async (req, res, next) => {
     const token = req.cookies.token;
-
+    //console.log("Username:", req.session.username, "AccountUsername:", req.session.accountUsername)
     if (token) {
         const decoded = decode(token);
         const expired = new Date(decoded.exp * 1000);
-        console.log("Expired:", expired, "Date:", new Date());
+        //console.log("Expired in:", expired, "Date:", new Date());
         if (expired < new Date()) {
             console.log("Token expired");
             res.clearCookie('token');
@@ -39,6 +39,8 @@ router.get('*', async (req, res, next) => {
             await authFunctions.deleteConnectionPG(getClient(), token);
             next();
         } else {
+            req.session.username = decoded.username;
+            req.session.accountUsername = decoded.username;
             next();
         }
     } else {
