@@ -7,8 +7,8 @@ const logger = new Logger();
 const {setupDatabase, getDatabase, getClient} = require('../database/dbSetup');
 const authFunctions = require('../database/dbAuth');
 const roomFunctions = require('../database/dbRoomData');
-const {verifyTokenAdmin, isAdminFunction, verifyToken, isConnected} = require("../miscFunction");
-const {verify, TokenExpiredError} = require("jsonwebtoken");
+const {verifyTokenAdmin, isAdminFunction, verifyToken, isConnected, checkConnection} = require("../miscFunction");
+const {verify, TokenExpiredError, decode} = require("jsonwebtoken");
 const {getStats} = require("../database/dbStats");
 let db;
 getDatabase().then((database) => {
@@ -16,52 +16,35 @@ getDatabase().then((database) => {
     console.log("Database link global.js");
 })
 
-router.get('*', (req, res, next) => {
+router.get('/clear', verifyToken, (req, res) => {
+    res.clearCookie('token');
+    res.clearCookie('sessionId');
+    res.clearCookie('rows');
+    res.clearCookie('cols');
+    res.redirect('/');
+})
+
+router.get('*', async (req, res, next) => {
     const token = req.cookies.token;
 
     if (token) {
-        if (req.session.username && req.session.accountUsername) {
+        const decoded = decode(token);
+        const expired = new Date(decoded.exp * 1000);
+        console.log("Expired:", expired, "Date:", new Date());
+        if (expired < new Date()) {
+            console.log("Token expired");
+            res.clearCookie('token');
+            req.session.username = null;
+            req.session.accountUsername = null;
+            await authFunctions.deleteConnectionPG(getClient(), token);
             next();
         } else {
-            verify(token, process.env.SECRET_KEY_ADMIN, async (err, decoded) => {
-                //console.log("decoded admin:", decoded);
-                if (err instanceof TokenExpiredError) {
-                    console.log("Token admin expired");
-                    // Token has expired
-                    //console.error('Token has expired:', err.expiredAt);
-                    res.redirect('/logout');
-                } else if (err) {
-                    // Token verification failed
-                    //console.error('Token verification failed:', err);
-                } else {
-                    // Token decoded successfully
-                    req.session.accountUsername = decoded.username;
-                    req.session.username = decoded.username;
-                    //console.log('Username from token:', username);
-                }
-            });
-            verify(token, process.env.SECRET_KEY, async (err, decoded) => {
-                //console.log("decoded user:", decoded);
-                if (err instanceof TokenExpiredError) {
-                    // Token has expired
-                    //console.error('Token has expired:', err.expiredAt);
-                    res.redirect('/logout');
-                } else if (err) {
-                    // Token verification failed
-                    //console.error('Token verification failed:', err);
-                } else {
-                    // Token decoded successfully
-                    req.session.accountUsername = decoded.username;
-                    req.session.username = decoded.username;
-                    //console.log('Username from token:', username);
-                }
-            });
             next();
         }
     } else {
         next();
     }
-})
+});
 
 router.get('/', async (req, res) => {
     const sessionId = req.sessionID;

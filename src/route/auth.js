@@ -150,6 +150,7 @@ router.get('/logout', verifyToken, async (req, res) => {
 
         // Assuming that deleteConnectionPG returns a Promise, use try/catch
         try {
+            console.log("Deleting connection")
             await authFunctions.deleteConnectionPG(getClient(), token);
         } catch (deleteConnectionError) {
             console.error('Error deleting connection:', deleteConnectionError);
@@ -159,21 +160,25 @@ router.get('/logout', verifyToken, async (req, res) => {
         }
 
         // Clear the 'token' cookie from the user's browser
+        console.log("Clearing cookie")
         res.clearCookie('token');
 
+        console.log("Clearing session")
         req.session.username = null;
         req.session.accountUsername = null;
 
         // Redirect the user to the home page
+        console.log("Redirecting")
         req.flash('success', 'Logged out successfully');
-        res.redirect('/');
+        return res.redirect('/');  // Use "return" to ensure the function exits here
     } catch (logoutError) {
         console.error('Error during logout:', logoutError);
         // Handle the error, perhaps by sending an error response or redirecting to an error page
         req.flash('error', 'An unexpected error occurred during logout');
-        res.redirect('/');
+        return res.redirect('/');
     }
 });
+
 
 
 module.exports = router;

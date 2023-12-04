@@ -40,6 +40,8 @@ block layout-content
                 });
         });
 
+        // TODO : Add force disconnect database side
+
         document.getElementById('forceDisconnect').addEventListener('click', function () {
             fetch('/forceDisconnect', {
                 method: 'POST',

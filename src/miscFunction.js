@@ -2,6 +2,16 @@ const jwt = require("jsonwebtoken");
 const authFunctions = require('./database/dbAuth');
 const {getClient} = require("./database/dbSetup");
 
+async function checkConnection(req, res, next) {
+    const token = req.cookies.token;
+    const isConnected = await authFunctions.isConnectedPG(getClient(), token)
+    if (token && isConnected) {
+        next();
+    } else {
+        res.clearCookie('token');
+    }
+}
+
 async function verifyToken(req, res, next) {
     const token = req.cookies.token;
 
@@ -40,7 +50,6 @@ async function verifyToken(req, res, next) {
         return res.redirect('/');
     }
 }
-
 
 function verifyTokenAdmin(req, res, next) {
     const token = req.cookies.token; // Extracting the token from the header
@@ -136,4 +145,5 @@ async function getConnectedUsers() {
 
 module.exports = {
     verifyToken, verifyTokenAdmin, isAdminFunction, getConnectedUsers, isConnected, isNotConnected,
+    checkConnection,
 };
