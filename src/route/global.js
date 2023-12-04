@@ -10,6 +10,7 @@ const roomFunctions = require('../database/dbRoomData');
 const {verifyTokenAdmin, isAdminFunction, verifyToken, isConnected, checkConnection} = require("../miscFunction");
 const {verify, TokenExpiredError, decode} = require("jsonwebtoken");
 const {getStats} = require("../database/dbStats");
+const {getTopScores} = require("../database/dbLeaderboard");
 let db;
 getDatabase().then((database) => {
     db = database;
@@ -129,6 +130,7 @@ router.get('/room', (req, res) => {
         roomName:roomName,
         users:users,
         username:username,
+        accountUsername: req.session.accountUsername,
     });
 });
 
@@ -147,6 +149,23 @@ router.get('/profile', verifyToken, async (req, res) => {
         admin: isAdmin,
         username: username,
         stats: stats,
+    });
+})
+
+router.get('/leaderboard', verifyToken, async (req, res) => {
+    const token = req.cookies.token;
+    const leaderboard = await getTopScores(getClient());
+    const isConnected = await authFunctions.isConnectedPG(getClient(), token);
+    const isAdmin = await isAdminFunction(req);
+
+    res.render('../view/page/leaderboard.pug', {
+        title: "Leaderboard",
+        flash: req.flash(),
+        showMenuBar: true,
+        loggedIn: isConnected,
+        admin: isAdmin,
+        username: req.session.accountUsername,
+        leaderboard: leaderboard,
     });
 })
 

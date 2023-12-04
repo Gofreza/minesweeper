@@ -24,6 +24,9 @@ block layout-content
                         label(for="inputNameCreateRoom") Name
                         input(id="inputNameCreateRoom" autocomplete="off")
                         button Create Room
+                        if loggedIn
+                            label(for="rankedCheckBox") Ranked
+                            input(id="rankedCheckBox" type="checkbox")
                     form(id="joinRoom" action="")
                         label(for="inputJoinRoom") Room Name
                         input(id="inputJoinRoom" autocomplete="off")
@@ -46,13 +49,15 @@ block layout-content
         const formCreateRoom = document.getElementById('createRoom');
         const inputCreateRoom = document.getElementById('inputCreateRoom');
         const inputNameCreateRoom = document.getElementById('inputNameCreateRoom');
+        const rankedCheckBox = document.getElementById('rankedCheckBox');
 
         formCreateRoom.addEventListener('submit', (e) => {
             e.preventDefault();
             if (inputCreateRoom.value) {
                 const inputValue = inputCreateRoom.value;
                 const inputName = inputNameCreateRoom.value
-                socket.emit('createRoom', {inputValue, inputName});
+                const isRanked = rankedCheckBox.checked;
+                socket.emit('createRoom', {inputValue, inputName, isRanked});
                 inputCreateRoom.value = '';
                 inputNameCreateRoom.value = '';
             }

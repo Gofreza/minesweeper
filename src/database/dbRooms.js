@@ -185,15 +185,16 @@ async function getHighestScoreFromRoomName(db, roomName) {
  * @param {string} roomName - The name of the room to associate the user with.
  * @param {string} username - The username of the user.
  * @param {number} score - The score to be added for the user.
+ * @param {string} accountUsername - The username of the account associated with the user.
  * @returns {Promise<void>} A promise that resolves when the user score is successfully added.
  *                          The promise is rejected if there is an error during the insertion process.
  */
-async function addUserScorePG(pgClient, roomName, username, score) {
+async function addUserScorePG(pgClient, roomName, username, score, accountUsername) {
     try {
         const query = {
             name: 'insert-user-score',
-            text: `INSERT INTO rooms (roomName, username, score) VALUES ($1, $2, $3)`,
-            values: [roomName, username, score]
+            text: `INSERT INTO rooms (roomName, username, score, accountUsername) VALUES ($1, $2, $3, $4)`,
+            values: [roomName, username, score, accountUsername]
         };
         await pgClient.query(query)
         console.log("addUserScorePG: " + roomName + " " + username + " " + score);

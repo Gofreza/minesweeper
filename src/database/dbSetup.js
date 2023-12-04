@@ -88,6 +88,7 @@ function createRoomsTable(){
             roomName VARCHAR(50) NOT NULL,
             username VARCHAR(50) NOT NULL,
             score INTEGER NOT NULL,
+            accountusername VARCHAR(50),
             PRIMARY KEY (roomName, username)
     );`};
 
@@ -122,12 +123,27 @@ function createStatsTable(){
         .catch(error => console.error("Error creating stats table:", error));
 }
 
+function createLeaderboardTable(){
+    const query = {
+        name: "create-leaderboard-table",
+        text:`
+        CREATE TABLE IF NOT EXISTS leaderboard (
+            username VARCHAR(50) NOT NULL PRIMARY KEY,
+            score INTEGER NOT NULL,
+            position INTEGER NOT NULL
+        );`};
+    pgClient.query(query)
+        .then(() => console.log("Created leaderboard table successfully"))
+        .catch(error => console.error("Error creating leaderboard table:", error));
+}
+
 function createAllTables(){
     createConnectionTable();
     createUsersTable();
     createRoomDataTable();
     createRoomsTable();
     createStatsTable();
+    createLeaderboardTable();
 }
 
 // **************

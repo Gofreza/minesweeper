@@ -1,0 +1,38 @@
+/* Add your base styles or import a CSS framework if needed */
+
+.leaderboard {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.leaderboard__header {
+    text-align: center;
+}
+
+.leaderboard__title {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.leaderboard__description {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.leaderboard__table {
+    list-style-type: none;
+    padding: 0;
+}
+
+.leaderboard__item {
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    padding: 10px;
+    list-style-type: none;
+}
+
+
+
+/* Add more styles as needed */

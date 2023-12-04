@@ -7,6 +7,7 @@ block layout-content
         h1(id='title')
             span#modify Room: #{roomName}, Users: #{users},
             span#username You: #{username}
+            span(style="display:none")#accountUsername Account: #{accountUsername}
         div(id="readyCount") Ready: 0 / 0
         button(onclick="quitRoom()") Quit
         button(id="ready" onclick="ready()") Ready
@@ -50,6 +51,7 @@ block layout-content
         const results = document.getElementById("results");
         const title = document.getElementById("modify");
         const username = document.getElementById("username").innerText.split(" ")[1];
+        const accountUsername = document.getElementById("accountUsername").innerText.split(" ")[1];
         const startDiv = document.getElementById("startGame");
         const readyButton = document.getElementById("ready");
         const notReadyButton = document.getElementById("notReady");
@@ -60,6 +62,7 @@ block layout-content
         let userReady = 0;
         let roomName;
         let users;
+        let isRanked;
 
         function updateTitle(room, userList) {
             title.innerText = `Room: ${room}, Users: ${userList.join(", ")} `;
@@ -77,9 +80,10 @@ block layout-content
         }
 
         socket.on('roomData', (data) => {
-            //console.log('Room data:', data);
+            console.log('Room data:', data);
             roomName = data.roomName;
             users = data.users;
+            isRanked = data.isRanked;
             if (data.usersReady){
                 userReady = data.usersReady;
                 updateReadyCount(data.usersReady)
@@ -173,52 +177,68 @@ block layout-content
             const {result} = event.detail;
             // Emit a signal to the socket
             waiting.style.display = "block";
-            socket.emit('gameFinished', {result, roomName, username});
+            socket.emit('gameFinished', {result, roomName, username, accountUsername});
         });
 
         socket.on('versusGameResult', (data) => {
-            //console.log("Game result:", data);
             const allResults = data.results;
             const sortedResults = allResults.sort((a, b) => a.score - b.score);
             waiting.style.display = "none";
             resultContainer.style.display = "flex";
-            // Build a string with results
-            let resultsText = "Results:\n";
-            sortedResults.forEach((result, index) => {
-                resultsText += `${index + 1}. ${result.username} - Score: ${result.score}\n`;
-            });
-            results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
+            let points = 0;
 
-            //console.log("Stats room:",numBombsDefused, numBombsExploded, numFlagsPlaced, numCellsRevealed, timeElapsed)
+            //console.log(isRanked ? "Ranked" : "Not ranked");
+
             // Update winning stats
-            fetch('/api/winningStats', {
+            const fetchOptions = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({winner: data.winner, numberOfResults: allResults.length})
-            })
+                body: JSON.stringify({
+                    winner: data.winner,
+                    numberOfResults: allResults.length,
+                    isRanked: isRanked,
+                    sortedResults: sortedResults
+                })
+            };
+
+            fetch('/api/winningStats', fetchOptions)
                 .then(response => response.json())
-                .then(data => {
-                    //console.log('Success room:', data);
+                .then(response => {
+                    //console.log(isRanked ? 'Success ranked room:' : 'Success room:', response);
+                    points = response.playerPoints;
+
+                    // Build a string with results
+                    let resultsText = "Results:\n";
+                    sortedResults.forEach((result, index) => {
+                        resultsText += `${index + 1}. ${result.username} - Score: ${result.score}\n`;
+                        //console.log("Points:", points, " : ", data.playerPoints);
+                    });
+                    if (points !== 0)
+                        points < 0 ? resultsText += `\nYou lose: ${points}\n` : resultsText += `\nYou win: ${points}\n`;
+
+                    results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
+                    results.innerText = results.innerText + "\n" + resultsText;
+
+                    clickStartButton = 0;
+                    userReady = 0;
+                    readyCountElement.style.display = "block";
+                    updateReadyCount(userReady);
+                    isReady = false;
+
+                    if (username === users[0]) {
+                        startDiv.style.display = "block";
+                    } else {
+                        startDiv.style.display = "none";
+                        readyButton.style.display = "block";
+                    }
                 })
                 .catch((error) => {
-                    //console.error('Error room:', error.error);
+                    console.error(isRanked ? 'Error ranked room:' : 'Error room:', error.error);
                 });
+        });
 
-            results.innerText = results.innerText + "\n" + resultsText;
-            clickStartButton = 0;
-            userReady = 0;
-            readyCountElement.style.display = "block";
-            updateReadyCount(userReady);
-            isReady = false;
-            if (username === users[0]) {
-                startDiv.style.display = "block";
-            } else {
-                startDiv.style.display = "none";
-                readyButton.style.display = "block";
-            }
-        })
 
         // =======
         // CHAT

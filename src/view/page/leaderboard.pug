@@ -1,0 +1,15 @@
+extends ../layout/base
+
+block css
+    link(rel="stylesheet", href="/css/leaderboard.css")
+block layout-content
+    .leaderboard
+        .leaderboard__header
+            h1.leaderboard__title Leaderboard
+            p.leaderboard__description
+                | The leaderboard shows the top 10 players sorted by their score.
+        .leaderboard__table
+            ul
+                each player in leaderboard
+                    li.leaderboard__item
+                        | Username: #{player.username}, Score: #{player.score}, Position: #{player.position}

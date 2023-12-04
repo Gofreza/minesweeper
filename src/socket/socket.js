@@ -52,6 +52,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
         socket.on('createRoom', (data) => {
             let roomName = data.inputValue;
             let username = data.inputName;
+            const isRanked = data.isRanked;
 
             const maxCharacterLimit = 30;
             if (roomName.length > maxCharacterLimit) {
@@ -66,12 +67,13 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 socket.handshake.session.room = roomName;
                 socket.handshake.session.username = username;
 
-                rooms[roomName] = {users: [username], slot: 1, started: false, usersReady: 0};
+                rooms[roomName] = {users: [username], slot: 1, started: false, usersReady: 0, isRanked: isRanked};
                 io.to(roomName).emit('roomData', {
                     roomName: roomName,
                     users: rooms[roomName].users,
                     username: username,
                     usersReady: rooms[roomName].usersReady,
+                    isRanked: isRanked,
                 });
 
                 console.log(rooms)
@@ -104,6 +106,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                     users: rooms[roomName].users,
                     username: username,
                     usersReady: rooms[roomName].usersReady,
+                    isRanked: rooms[roomName].isRanked,
                 }
                 console.log("Server data:", dataReturn)
                 io.to(roomName).emit('roomData', dataReturn);
@@ -166,6 +169,7 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                     users: rooms[roomName].users,
                     username: socket.handshake.session.username,
                     usersReady: rooms[roomName].usersReady,
+                    isRanked: rooms[roomName].isRanked,
                 });
             }
 
@@ -214,12 +218,14 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
             const result = data.result;
             const roomName = data.roomName;
             const username = data.username;
+            const accountUsername = data.accountUsername;
             const playerNumber = rooms[roomName].users.length;
             //console.log("Game finished server side in room " + roomName + " with result " + username + " : " + result + " !");
             logger.log(`${socket.handshake.session.id} : ${socket.handshake.session.username} finished his game in room ${roomName} with result ${result}`)
             // Put result in the db
             //await userFunctions.addUserScore(db, roomName, username, result);
-            await userFunctions.addUserScorePG(pgClient, roomName, username, result);
+            console.log("Add user score:", roomName, username, result, accountUsername)
+            await userFunctions.addUserScorePG(pgClient, roomName, username, result, accountUsername);
             // Check if there are the two results
             // If there are send the result to the two players io.emit[roomName].emit('versusGameResult', result)
             const isGameFinished = await userFunctions.checkResultsPG(pgClient, roomName, playerNumber);
@@ -231,7 +237,8 @@ module.exports = function configureSocket(server, sessionMiddleware, app) {
                 //const results = await userFunctions.getHighestScoreFromRoomName(db, roomName);
                 //const allResults = await userFunctions.getResultsFromRoomName(db, roomName);
                 const results = await userFunctions.getHighestScoreFromRoomNamePG(pgClient, roomName);
-                const allResults = await userFunctions.getResultsFromRoomNamePG(pgClient, roomName);
+                let allResults = await userFunctions.getResultsFromRoomNamePG(pgClient, roomName);
+
                 io.to(roomName).emit('versusGameResult', {result:results.score, winner:results.username, results:allResults});
                 //await userFunctions.deleteAllUserScores(db, roomName);
                 await userFunctions.deleteAllUserScoresPG(pgClient, roomName);
