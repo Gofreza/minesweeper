@@ -29,8 +29,6 @@ router.get('*', (req, res, next) => {
                     console.log("Token admin expired");
                     // Token has expired
                     //console.error('Token has expired:', err.expiredAt);
-                    await authFunctions.deleteConnectionPG(getClient(), token);
-                    res.clearCookie('token');
                     res.redirect('/logout');
                 } else if (err) {
                     // Token verification failed
@@ -47,8 +45,6 @@ router.get('*', (req, res, next) => {
                 if (err instanceof TokenExpiredError) {
                     // Token has expired
                     //console.error('Token has expired:', err.expiredAt);
-                    await authFunctions.deleteConnectionPG(getClient(), token);
-                    res.clearCookie('token');
                     res.redirect('/logout');
                 } else if (err) {
                     // Token verification failed

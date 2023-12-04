@@ -28,6 +28,9 @@ async function updateStats(pgClient, username, stats) {
             stats.numCellsRevealed += existingStats.numcellsrevealed || 0;
 
             // Handle time-related statistics
+            // TODO: Handle average time properly
+            // Doesn't need to pass three time, only one is enough
+            // Just need to do the math after
             if (existingStats.averageTime) {
                 stats.averageTime = (stats.averageTime * stats.numGamesPlayed + existingStats.averageTime * existingStats.numGamesPlayed) / (stats.numGamesPlayed + existingStats.numGamesPlayed);
             }
