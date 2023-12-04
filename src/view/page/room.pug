@@ -189,14 +189,14 @@ block layout-content
             });
             results.innerText = "Bravo : " + data.winner + "\n" + "Score : " + data.result;
 
-            console.log("Stats room:",numBombsDefused, numBombsExploded, numFlagsPlaced, numCellsRevealed, timeElapsed)
+            //console.log("Stats room:",numBombsDefused, numBombsExploded, numFlagsPlaced, numCellsRevealed, timeElapsed)
             // Update winning stats
             fetch('/api/winningStats', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({winner: data.winner})
+                body: JSON.stringify({winner: data.winner, numberOfResults: allResults.length})
             })
                 .then(response => response.json())
                 .then(data => {

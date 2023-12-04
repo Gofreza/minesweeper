@@ -12,16 +12,17 @@ router.post('/api/deconnect', (req, res) => {
     res.json({success: true});
 })
 
+const stats = []
+
 router.post('/api/stats', verifyToken, async (req, res) => {
     try {
         const body = req.body;
-        const token = req.cookies.token;
-        const isConnected = await isConnectedPG(getClient(), token);
-        const username = req.session.accountUsername;
-        if (isConnected) {
-            //console.log("Stats:", body);
-            await updateStats(getClient(), username, body);
-        }
+        const accountUsername = req.session.accountUsername;
+
+        //console.log("Stats api/stats:", body);
+        //await updateStats(getClient(), accountUsername, body);
+        stats.push({username: accountUsername, stats: body});
+
         res.status(200).send({success: "success"});
     } catch (e) {
         console.log("Error:", e);
@@ -38,16 +39,30 @@ router.post('/api/winningStats', verifyToken, async (req, res) => {
             return;
         }
         const body = req.body;
-        //console.log("Winning Stats:", body);
+        //console.log("Winning Stats:", body, "Username:", req.session.username);
         const winner = body.winner;
+        const numberOfResults = body.numberOfResults;
+        //console.log("Stats api/winningStats:", stats);
 
-        if (winner === req.session.username) {
-            await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 1, numGamesLost: 0});
+        if (numberOfResults > 1) {
+            if (winner === req.session.username) {
+                await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 1, numGamesLost: 0});
+            } else {
+                await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 0, numGamesLost: 1});
+            }
+            for (const playerStats of stats) {
+                console.log(playerStats.stats)
+                await updateStats(getClient(), playerStats.username, playerStats.stats);
+            }
+            stats.length = 0;
+
+            res.status(200).send({success: "success"});
         } else {
-            await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 0, numGamesLost: 1});
+            stats.length = 0;
+            res.status(200).send({error: "Not enough players to update stats"});
         }
 
-        res.status(200).send({success: "success"});
+
     } catch (e) {
         console.log("Error:", e);
         res.status(500).send({error: "Internal server error"});

@@ -39,7 +39,7 @@ router.get('*', async (req, res, next) => {
             await authFunctions.deleteConnectionPG(getClient(), token);
             next();
         } else {
-            req.session.username = decoded.username;
+            //req.session.username = decoded.username;
             req.session.accountUsername = decoded.username;
             next();
         }
