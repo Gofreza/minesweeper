@@ -90,8 +90,8 @@ async function updateWinningStats(pgClient, username, stats) {
     try {
         const query = {
             name: "update-winning-stats",
-            text: "UPDATE stats SET numgameswon = numgameswon + $1, numgameslost = numgameslost + $2 WHERE username = $3 AND gamemode = 'multi'",
-            values: [stats.numGamesWon, stats.numGamesLost, username]
+            text: "UPDATE stats SET numgameswon = numgameswon + $1, numgameslost = numgameslost + $2 WHERE username = $3 AND gamemode = $4",
+            values: [stats.numGamesWon, stats.numGamesLost, username, stats.gameMode]
         }
         await pgClient.query(query);
     } catch (error) {

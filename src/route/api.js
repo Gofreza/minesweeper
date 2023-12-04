@@ -46,9 +46,9 @@ router.post('/api/winningStats', verifyToken, async (req, res) => {
 
         if (numberOfResults > 1) {
             if (winner === req.session.username) {
-                await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 1, numGamesLost: 0});
+                await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 1, numGamesLost: 0, gameMode: 'multi'});
             } else {
-                await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 0, numGamesLost: 1});
+                await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 0, numGamesLost: 1, gameMode: 'multi'});
             }
             for (const playerStats of stats) {
                 console.log(playerStats.stats)
@@ -58,6 +58,15 @@ router.post('/api/winningStats', verifyToken, async (req, res) => {
 
             res.status(200).send({success: "success"});
         } else {
+            for (const playerStats of stats) {
+                if (winner === req.session.username && playerStats.numBombsExploded === 0) {
+                    await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 1, numGamesLost: 0, gameMode: 'solo'});
+                } else {
+                    await updateWinningStats(getClient(), req.session.accountUsername, {numGamesWon: 0, numGamesLost: 1, gameMode: 'solo'});
+                }
+                playerStats.stats.gameMode = 'solo';
+                await updateStats(getClient(), playerStats.username, playerStats.stats);
+            }
             stats.length = 0;
             res.status(200).send({error: "Not enough players to update stats"});
         }
