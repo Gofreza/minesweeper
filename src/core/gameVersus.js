@@ -68,6 +68,12 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
     let zoomFactor = 1;
     let isGameWin = false;
 
+    // Constants for long press (right-click) handling
+    const longPressDuration = 500; // milliseconds
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchTimeout;
+
     //Stats
     let numBombsDefused = 0;
     let numBombsExploded = 0;
@@ -177,6 +183,28 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         }
     }
 
+    const getGridCoordinates = (clientX, clientY) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        // Convert clicked coordinates to grid coordinates
+        const row = Math.floor(y / (cellSize * zoomFactor));
+        const col = Math.floor(x / (cellSize * zoomFactor));
+
+        return { row, col };
+    };
+
+    function removeTouchListeners() {
+        canvas.removeEventListener('touchstart', touchStartHandler);
+        canvas.removeEventListener('touchend', touchEndHandler);
+    }
+
+    function addTouchListeners() {
+        canvas.addEventListener('touchstart', touchStartHandler);
+        canvas.addEventListener('touchend', touchEndHandler);
+    }
+
     function removeClickListeners() {
         canvas.removeEventListener('click', clickHandler);
         canvas.removeEventListener('contextmenu', contextMenuHandler);
@@ -254,6 +282,104 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
         grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
         // Update the bombs counter
         bombsDiv.innerHTML = (parseInt(bombsDiv.innerHTML) - 1).toString();
+    }
+
+    // Touch start for long press (right-click)
+    function touchStartHandler(event) {
+        event.preventDefault();
+        const {row, col} = getGridCoordinates(event.changedTouches[0].clientX, event.changedTouches[0].clientY)
+        startTimer();
+
+        // Store the coordinates and start a timeout
+        touchStartX = row;
+        touchStartY = col;
+        touchTimeout = setTimeout(() => {
+            // Handle long press (right-click) logic here
+            grid.revealCell(row, col, true);
+
+            // Clear the canvas and redraw the grid
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let row = 0; row < numRows; row++) {
+                for (let col = 0; col < numCols; col++) {
+                    grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
+                    ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                }
+            }
+
+            // Update the bombs counter
+            if (!grid.matrix[row][col].isVisible() && grid.matrix[row][col].isFlagged() ) {
+                bombsDiv.innerHTML = (parseInt(bombsDiv.innerHTML) - 1).toString();
+            }
+            if (!grid.matrix[row][col].isVisible() && !grid.matrix[row][col].isFlagged()) {
+                bombsDiv.innerHTML = (parseInt(bombsDiv.innerHTML) + 1).toString();
+            }
+
+            if (checkIfGameEnded()) {
+                isGameWin = true;
+                stopTimer();
+                gameEnded = true;
+                removeClickListeners();
+                removeTouchListeners();
+                isGameWon();
+                sendStats();
+            }
+        }, longPressDuration);
+    }
+
+    // Touch end
+    function touchEndHandler(event) {
+        event.preventDefault();
+
+        // Clear the timeout to prevent it from triggering after a short press
+        clearTimeout(touchTimeout);
+
+        // Handle touchend (left-click) logic here
+        const {row, col} = getGridCoordinates(event.changedTouches[0].clientX, event.changedTouches[0].clientY)
+
+        startTimer();
+
+        // Handle left clicks
+        if (grid.matrix[row][col].isVisible()) {
+            if (grid.matrix[row][col].isVisible()) {
+                if (grid.matrix[row][col].getNumber() > 0 && !grid.matrix[row][col].hasBomb()) {
+                    const {isBomb, bombsList} = grid.revealNeighbours(row, col);
+                    //console.log(`isBomb: ${isBomb}, bombList: ${bombsList}`)
+                    if (isBomb) {
+                        for (const obj of bombsList) {
+                            const bombRow = obj.bombRow;
+                            const bombCol = obj.bombCol;
+                            if (!grid.matrix[bombRow][bombCol].getExploded()) {
+                                lose();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            grid.revealCell(row, col, false);
+        }
+
+        // Clear the canvas and redraw the grid
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let row = 0; row < numRows; row++) {
+            for (let col = 0; col < numCols; col++) {
+                grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
+                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+            }
+        }
+
+        if (checkIfClickedCellIsBomb(row, col)) {
+            lose();
+        } else if (checkIfGameEnded()) {
+            isGameWin = true;
+            stopTimer();
+            gameEnded = true;
+            removeClickListeners();
+            removeTouchListeners();
+            isGameWon();
+            sendStats();
+        }
     }
 
     //Left click
