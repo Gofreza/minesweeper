@@ -483,6 +483,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
 
     let gameEnded = false;
     addClickListeners();
+    addTouchListeners();
 
     //const grid = new Grid(numRows, numCols); // Creating a new Grid
     //const gridTest = new Grid(15, 10, 10);
