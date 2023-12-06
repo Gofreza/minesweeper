@@ -22,7 +22,6 @@ app.set('view engine', 'pug');
 app.set('views', __dirname + '/views');
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, '../public')));
-// Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

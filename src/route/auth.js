@@ -59,7 +59,7 @@ router.post('/login', isNotConnected, async (req, res) => {
                 }
                 // Password is correct, proceed with admin check
                 if (await checkAdmin(pgClient, username, hashedPassword, res)) {
-                    const token = jwt.sign({username: username}, process.env.SECRET_KEY_ADMIN, {expiresIn: '1h'});
+                    const token = jwt.sign({username: username}, process.env.SECRET_KEY_ADMIN, {expiresIn: '24h'});
                     res.cookie('token', token, {httpOnly: true});
 
                     // Add a connection to the database
@@ -72,7 +72,7 @@ router.post('/login', isNotConnected, async (req, res) => {
                     req.flash('success', 'Admin Logged in successfully')
                     return res.redirect('/adminDashboard');
                 } else {
-                    const token = jwt.sign({username: username}, process.env.SECRET_KEY, {expiresIn: '1h'});
+                    const token = jwt.sign({username: username}, process.env.SECRET_KEY, {expiresIn: '24h'});
                     res.cookie('token', token, {httpOnly: true});
 
                     // Add a connection to the database

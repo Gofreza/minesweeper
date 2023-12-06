@@ -117,6 +117,10 @@ a:visited, a:link {
     user-select: none;
 }
 
+.canvas-container, .info-container, .chat-container {
+    user-select: text;
+}
+
 .buttons {
     justify-content: center;
     align-items: flex-start;
