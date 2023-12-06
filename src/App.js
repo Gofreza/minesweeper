@@ -10,8 +10,8 @@ require('dotenv').config();
 const app = express();
 let port = process.env.PORT || 8080;
 
-const http = require('http');
-const server = http.createServer(app); // Use http.createServer to create a server
+const https = require('https');
+const server = https.createServer(app); // Use http.createServer to create a server
 
 // *************************
 // *** Middleware config ***
@@ -25,14 +25,6 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use((req, res, next) => {
-    if (req.protocol === 'http') {
-        return res.redirect(301, `https://${req.headers.host}${req.url}`);
-    }
-
-    next();
-});
 
 // **********************
 // *** Session config ***
