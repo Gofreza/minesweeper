@@ -25,13 +25,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// Force HTTPS
-app.use(function(request, response, next) {
-    if (process.env.NODE_ENV !== 'development' && !request.secure) {
-        return response.redirect("https://" + request.headers.host + request.url);
-    }
-    next();
-})
+
 // **********************
 // *** Session config ***
 // **********************
@@ -50,9 +44,8 @@ app.use(flash());
 // *** Database Set Up ***
 // ***********************
 
-const {setupDatabase, connectDatabase, disconnectDatabase, getClient} = require("./database/dbSetup");
+const {connectDatabase, disconnectDatabase, getClient} = require("./database/dbSetup");
 const roomFunctions = require("./database/dbRoomData");
-const {fillDatabase} = require("./database/dbFill");
 const {fillDb} = require("./database/dbFill");
 let pgClient = null;
 /*let db;
