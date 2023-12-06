@@ -122,6 +122,9 @@ router.post('/room', (req, res) => {
 
 router.get('/room', (req, res) => {
     // Retrieve the data from the session
+    if (!req.session.roomData) {
+        return res.redirect('/');
+    }
     const { roomName, users, username } = req.session.roomData || {};
     //console.log("SessionGET roomName:", roomName, "users:", users, "username:", username);
     // Render the page
