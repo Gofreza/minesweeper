@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const enforce = require('express-enforces-ssl');
 const flash = require('connect-flash')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -25,6 +26,8 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+// Force HTTPS
+app.use(enforce.HTTPS({ trustProtoHeader: true }));
 
 // **********************
 // *** Session config ***
