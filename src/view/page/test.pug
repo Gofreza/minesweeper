@@ -21,13 +21,14 @@ block layout-content
                 | Too bad ! You loose !
                 button(id="newGameOverButton") New Game
     .page-container
-        .canvas-container
-            .info-container
-                .bombs-container
-                    canvas(id="bombsCanvas")
-                    div(id="bombs") 0
-                div(id="timer") 0
-            canvas(id="minesweeperCanvas")
+        .game-container
+            .canvas-container
+                .info-container
+                    .bombs-container
+                        canvas(id="bombsCanvas")
+                        div(id="bombs") 0
+                    div(id="timer") 0
+                canvas(id="minesweeperCanvas")
     script(src="./js/main.bundle.js")
     script.
         const newGameWinButton = document.getElementById('newGameWinButton');
