@@ -26,6 +26,14 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+    if (req.protocol === 'http') {
+        return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+
+    next();
+});
+
 // **********************
 // *** Session config ***
 // **********************
