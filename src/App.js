@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
-let port = process.env.PORT || 8080;
+let port = process.env.PORT_DEV || 8080;
 
 const http = require('http');
 const server = http.createServer(app); // Use http.createServer to create a server
