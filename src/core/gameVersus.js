@@ -320,7 +320,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
                 gameEnded = true;
                 removeClickListeners();
                 removeTouchListeners();
-                isGameWon();
+                handleGameEnd(timeElapsed);
                 sendStats();
             }
         }, longPressDuration);
@@ -377,7 +377,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
             gameEnded = true;
             removeClickListeners();
             removeTouchListeners();
-            isGameWon();
+            handleGameEnd(timeElapsed);
             sendStats();
         }
     }
@@ -430,6 +430,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
             stopTimer();
             gameEnded = true;
             removeClickListeners();
+            removeTouchListeners();
             //isGameWon();
             handleGameEnd(timeElapsed);
             sendStats();
@@ -473,6 +474,7 @@ document.addEventListener('startVersusGameEvent', async function (event)  {
             //console.log("Game Over! You win!");
             gameEnded = true;
             removeClickListeners();
+            removeTouchListeners();
             //isGameWon();
             handleGameEnd(timeElapsed);
             sendStats();
