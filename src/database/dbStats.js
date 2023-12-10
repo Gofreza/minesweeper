@@ -69,7 +69,11 @@ async function getStats(pgClient, username) {
     try {
         const query = {
             name: "get-stats",
-            text: "SELECT * FROM stats, users WHERE users.username = $1 AND stats.user = users.id",
+            text: `
+            SELECT stats.*
+            FROM stats
+            INNER JOIN users ON stats.user = users.id
+            WHERE users.username = $1`,
             values: [username]
         };
 
