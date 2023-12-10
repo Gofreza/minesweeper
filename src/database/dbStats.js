@@ -10,9 +10,14 @@ async function updateStats(pgClient, username, stats) {
         // Retrieve the existing stats from the database
         const existingStatsQuery = {
             name: "get-existing-stats",
-            text: "SELECT * FROM stats, users WHERE users.username = $1 AND users.id = stats.user AND gameMode = $2",
+            text: `
+            SELECT stats.column1, stats.column2, ..., users.columnA, users.columnB, ...
+            FROM stats
+            INNER JOIN users ON stats.user = users.id
+            WHERE users.username = $1 AND stats.gameMode = $2`,
             values: [username, stats.gameMode]
         };
+
 
         const existingStatsResult = await pgClient.query(existingStatsQuery);
         const existingStats = existingStatsResult.rows[0];
