@@ -10,7 +10,7 @@ async function updateStats(pgClient, username, stats) {
         // Retrieve the existing stats from the database
         const existingStatsQuery = {
             name: "get-existing-stats",
-            text: "SELECT * FROM stats WHERE username = $1 AND gameMode = $2",
+            text: "SELECT * FROM stats, users WHERE users.username = $1 AND users.id = stats.user AND gameMode = $2",
             values: [username, stats.gameMode]
         };
 
@@ -42,7 +42,9 @@ async function updateStats(pgClient, username, stats) {
         // Update the stats in the database
         const updateQuery = {
             name: "update-stats",
-            text: `UPDATE stats SET numGamesPlayed = $3, numGamesWon = $4, numGamesLost = $5, numBombsDefused = $6, numBombsExploded = $7, numFlagsPlaced = $8, numCellsRevealed = $9, averageTime = $10, fastestTime = $11, longestTime = $12 WHERE username = $1 AND gameMode = $2`,
+            text: `UPDATE stats SET numGamesPlayed = $3, numGamesWon = $4, numGamesLost = $5, numBombsDefused = $6, numBombsExploded = $7, numFlagsPlaced = $8, numCellsRevealed = $9, averageTime = $10, fastestTime = $11, longestTime = $12 
+             WHERE "user" = (SELECT id FROM users WHERE username = $1) 
+               AND gameMode = $2`,
             values: [
                 username, stats.gameMode,
                 stats.numGamesPlayed, stats.numGamesWon, stats.numGamesLost,
@@ -67,7 +69,7 @@ async function getStats(pgClient, username) {
     try {
         const query = {
             name: "get-stats",
-            text: "SELECT * FROM stats WHERE username = $1",
+            text: "SELECT * FROM stats, users WHERE users.username = $1 AND stats.user = users.id",
             values: [username]
         };
 
@@ -90,7 +92,9 @@ async function updateWinningStats(pgClient, username, stats) {
     try {
         const query = {
             name: "update-winning-stats",
-            text: "UPDATE stats SET numgameswon = numgameswon + $1, numgameslost = numgameslost + $2 WHERE username = $3 AND gamemode = $4",
+            text: `UPDATE stats SET numgameswon = numgameswon + $1, numgameslost = numgameslost + $2 
+                WHERE "user" = (SELECT id FROM users WHERE username = $3) 
+                AND gamemode = $4`,
             values: [stats.numGamesWon, stats.numGamesLost, username, stats.gameMode]
         }
         await pgClient.query(query);
