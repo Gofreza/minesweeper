@@ -148,7 +148,7 @@ async function insertUserPG(pgClient, username, password) {
             {
                 name: 'insert-stats-solo-pg',
                 text: `INSERT INTO stats (username, gameMode, numGamesPlayed, numGamesWon, numGamesLost, numBombsDefused, numBombsExploded, numFlagsPlaced, numCellsRevealed, averageTime, fastestTime, longestTime)
-                       VALUES ($1, 'solo', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)`,
+                       VALUES (SELECT id FROM users WHERE username = $1), 'solo', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)`,
                 values: [username]
             },
             {

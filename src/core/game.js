@@ -380,11 +380,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             // Clear the canvas and redraw the grid
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let row = 0; row < numRows; row++) {
-        for (let col = 0; col < numCols; col++) {
-            grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
-            ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
-        }
-    }
+                for (let col = 0; col < numCols; col++) {
+                    grid.matrix[row][col].drawCellContent(ctx, row, col, cellSize);
+                    ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                }
+            }
 
             // Update the bombs counter
             if (!grid.matrix[row][col].isVisible() && grid.matrix[row][col].isFlagged() ) {
