@@ -11,11 +11,14 @@ A new version is in the making, it will be a complete rewrite of the project. <b
 It will be a lot more cleaner and will use a better architecture. <br>
 Well at last I hope so. <br>
 
+** UPDATE **
+The new version is up, use the link below the access it.
+Here is the github repository :
+https://github.com/Gofreza/multisweeper-ultimate
+
 ## How to use
 
 Just go to this link :
-https://multisweeper.cleverapps.io/ <br>
-Or this one :
 https://www.multisweeper.fr/ <br>
 Hopefully it will be up and running.
 
