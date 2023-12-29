@@ -11,7 +11,7 @@ A new version is in the making, it will be a complete rewrite of the project. <b
 It will be a lot more cleaner and will use a better architecture. <br>
 Well at last I hope so. <br>
 
-** UPDATE **
+## Update
 The new version is up, use the link below the access it.
 Here is the github repository :
 https://github.com/Gofreza/multisweeper-ultimate
