@@ -18,9 +18,11 @@ https://github.com/Gofreza/multisweeper-ultimate
 
 ## How to use
 
-Just go to this link :
-https://www.multisweeper.fr/ <br>
-Hopefully it will be up and running.
+~~Just go to this link :~~
+~~https://www.multisweeper.fr/ <br>~~
+~~Hopefully it will be up and running.~~
+
+I am currently working on my server systems. The site will be back online once everything is set up.
 
 ## Bugs
 
